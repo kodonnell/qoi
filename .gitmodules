@@ -1,0 +1,3 @@
+[submodule "qoi/c"]
+	path = qoi/c
+	url = https://github.com/phoboslab/qoi

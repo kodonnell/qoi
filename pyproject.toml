@@ -1,0 +1,14 @@
+[build-system]
+requires = [
+    "setuptools >= 41.0.0",
+    "wheel >= 0.30.0",
+    "setuptools_scm >= 2",
+    "numpy",
+    "Cython"
+]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools_scm]
+# TODO: add this back ... can't import _version in Cython 'cos I dunno ...
+# write_to = "qoi/_version.py"
+# write_to_template = "__version__ = \"{version}\""
