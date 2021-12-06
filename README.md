@@ -29,14 +29,23 @@ pytest .
 
 ### Build and publish
 
-We're using `setuptools_scm` for versioning which basically means, once you're happy with your code and it's passing tests:
+We're using `setuptools_scm` for versioning which basically means, once you're happy with your code and it's passing tests, first:
+
+```
+USE_CYTHON=1 python -m build
+```
+
+This checks that the code compiles *from the sdist that gets created*. This is important if you're messing round with build options etc. 
+
+Then
 
 ```sh
 git commit -a -m "..., ready for release!"
 git tag "vX.X.X"
 rm -rf ./dist
 USE_CYTHON=1 python -m build --sdist
-python -m twine upload — repository testpypi dist/*
+python -m twine upload --repository testpypi dist/*
+python -m twine upload --repository pypi dist/*
 ```
 
 > NB: in future we'll have this automated as part of a Github Action etc.
@@ -70,3 +79,7 @@ For now, let's rock with `qoi` because
 ### What's up with `./src`?!
 
 See [here](https://hynek.me/articles/testing-packaging/). I didn't read all of it, but yeh, `import qoi` is annoying when there's also a folder called `qoi`.
+
+### `USE_CTYHON=1`?
+
+See [here](https://cython.readthedocs.io/en/latest/src/userguide/source_files_and_compilation.html#distributing-cython-modules). Fair point.
