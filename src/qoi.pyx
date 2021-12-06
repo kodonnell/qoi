@@ -4,8 +4,16 @@ cimport numpy as np
 from libc.stdlib cimport free
 from cpython cimport PyObject, Py_INCREF
 import enum
+import warnings
+
+try:
+    from _version import __version__
+except:
+    warnings.warn("Couldn't import _version.__version__ - please ensure you build in a way the utilises setuptools_scm")
+    __version__ = None
 
 np.import_array()
+
 
 class QOIColorSpace(enum.Enum):
     SRGB = qoi.QOI_SRGB
@@ -55,7 +63,7 @@ cpdef np.ndarray read(str filename, int channels = 0):
     cdef qoi.qoi_desc desc
     cdef int ret
     cdef char* pixels
-    pixels = <char *>qoi_read(_filename, &desc, channels)
+    pixels = <char *>qoi.qoi_read(_filename, &desc, channels)
     if pixels is NULL:
         raise RuntimeError("Failed to read!")
     try:
@@ -94,7 +102,7 @@ cpdef np.ndarray decode(bytes data, int channels = 0):
     cdef int ret
     cdef char * pixels
     cdef char * cdata = data
-    pixels = <char *>qoi_decode(&((<char *>data)[0]), len(data), &desc, channels)
+    pixels = <char *>qoi.qoi_decode(&((<char *>data)[0]), len(data), &desc, channels)
     if pixels is NULL:
         raise RuntimeError("Failed to decode!")
     try:

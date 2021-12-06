@@ -8,36 +8,49 @@ A simple Python wrapper around [qoi](https://github.com/phoboslab/qoi), the "Qui
 pip install qoi
 ```
 
-## Develop
+## Developing
 
-Clone
+### Clone
 ```sh
 git clone --recursive https://github.com/kodonnell/qoi/
 ```
 
-Build
+### Dev
 ```sh
-python -m pip install --upgrade build
-rm -rf ./dist
-python -m build sdist
+USE_CYTHON=1 pip install -e .[dev]
+# Make your changes, and ensure you re-run the above if it's to the cython files ...
 ```
 
-Publish
+
+### Test
 ```sh
+pytest .
+```
+
+### Build and publish
+
+We're using `setuptools_scm` for versioning which basically means, once you're happy with your code and it's passing tests:
+
+```sh
+git commit -a -m "..., ready for release!"
+git tag "vX.X.X"
+rm -rf ./dist
+USE_CYTHON=1 python -m build --sdist
 python -m twine upload — repository testpypi dist/*
 ```
 
+> NB: in future we'll have this automated as part of a Github Action etc.
+
+
 ## TODO:
 
-- Add in `setuptools_scm` and figure out that nicely.
 - Add build/publish pipeline (inc. running tests) and wheels via `cibuildwheel`.
 - Create a `qoi` CLI
 - Add some benchmarks and compare with `qoi`
 - Add example usage to README
 - More tests!
 - Allow `Path` as argument for filename.
-- Why does `write` fail without a `.qoi` extension? If that's valid, raise a proper exception.
-- Add version to `._version` as per `setuptools_scm` ... for some reason it breaks when we add an `__init__.py`.
+- Why does `write` fail without a `.qoi` extension? If that's valid, raise a proper exception in Python so users know what's goin on.
 - Return the colorspace in read/decode.
 
 ## Discussion
@@ -53,3 +66,7 @@ For now, let's rock with `qoi` because
 - We're already in python, and the `py` in `pyqoi` seems redundant. For what it's worth, `3 < 5`.
 - `pyqoi` seems like a good name for a python-only version of QOI (useful for pypy etc.), which this isn't.
 - `qoi` is generally new so let's not overthink it for now. We can always rename later if needed.
+
+### What's up with `./src`?!
+
+See [here](https://hynek.me/articles/testing-packaging/). I didn't read all of it, but yeh, `import qoi` is annoying when there's also a folder called `qoi`.

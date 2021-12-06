@@ -1,4 +1,4 @@
-cdef extern from "c/qoi.h":
+cdef extern from "phoboslab_qoi/qoi.h":
     ctypedef struct qoi_desc:
         unsigned int width
         unsigned int height

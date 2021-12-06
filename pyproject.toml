@@ -9,6 +9,5 @@ requires = [
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools_scm]
-# TODO: add this back ... can't import _version in Cython 'cos I dunno ...
-# write_to = "qoi/_version.py"
-# write_to_template = "__version__ = \"{version}\""
+write_to = "src/_version.py"
+write_to_template = "__version__ = \"{version}\""
