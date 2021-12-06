@@ -32,6 +32,7 @@ pytest .
 We're using `setuptools_scm` for versioning which basically means, once you're happy with your code and it's passing tests, first:
 
 ```
+rm -rf ./build
 USE_CYTHON=1 python -m build
 ```
 
@@ -42,6 +43,7 @@ Then
 ```sh
 git commit -a -m "..., ready for release!"
 git tag "vX.X.X"
+rm -rf ./build
 rm -rf ./dist
 USE_CYTHON=1 python -m build --sdist
 python -m twine upload --repository testpypi dist/*
@@ -58,7 +60,6 @@ python -m twine upload --repository pypi dist/*
 - Add some benchmarks and compare with `qoi`
 - Add example usage to README
 - More tests!
-- Allow `Path` as argument for filename.
 - Why does `write` fail without a `.qoi` extension? If that's valid, raise a proper exception in Python so users know what's goin on.
 - Return the colorspace in read/decode.
 
@@ -78,7 +79,7 @@ For now, let's rock with `qoi` because
 
 ### What's up with `./src`?!
 
-See [here](https://hynek.me/articles/testing-packaging/). I didn't read all of it, but yeh, `import qoi` is annoying when there's also a folder called `qoi`.
+See [here](https://hynek.me/articles/testing-packaging/) and [here](https://blog.ionelmc.ro/2014/05/25/python-packaging/#the-structure). I didn't read all of it, but yeh, `import qoi` is annoying when there's also a folder called `qoi`.
 
 ### `USE_CTYHON=1`?
 

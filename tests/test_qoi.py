@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import numpy as np
 import pytest
 import qoi
@@ -6,8 +8,11 @@ import qoi
 rgb = np.random.randint(low=0, high=255, size=(224, 244, 3)).astype(np.uint8)
 
 
-def test_write_read(tmp_path):
+@pytest.mark.parametrize("is_path", [True, False])
+def test_write_read(tmp_path, is_path):
     tmp_path = str(tmp_path) + ".qoi"
+    if is_path:
+        tmp_path = Path(tmp_path)
     bytes_written = qoi.write(tmp_path, rgb, qoi.QOIColorSpace.SRGB)
     assert bytes_written > 0
     rgb_read = qoi.read(tmp_path)
