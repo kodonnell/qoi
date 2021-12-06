@@ -1,4 +1,5 @@
 import numpy as np
+import pytest
 import qoi
 
 # Create an empty 3-channel image
@@ -21,3 +22,8 @@ def test_encode_decode():
 
 def test_version():
     assert qoi.__version__ is not None
+
+
+@pytest.mark.xfail
+def test_writes_without_extension(tmp_path):
+    qoi.write(str(tmp_path), rgb, qoi.QOIColorSpace.SRGB)
