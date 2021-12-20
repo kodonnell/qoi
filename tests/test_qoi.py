@@ -11,9 +11,7 @@ RGBA = np.random.randint(low=0, high=255, size=(224, 244, 4)).astype(np.uint8)
 
 @pytest.mark.parametrize("is_path", [True, False])
 @pytest.mark.parametrize("is_rgba", [True, False])
-@pytest.mark.parametrize(
-    "colorspace", [qoi.QOIColorSpace.SRGB, qoi.QOIColorSpace.LINEAR, qoi.QOIColorSpace.SRGB_LINEAR_ALPHA, None]
-)
+@pytest.mark.parametrize("colorspace", [qoi.QOIColorSpace.SRGB, qoi.QOIColorSpace.LINEAR, None])
 def test_write_read(tmp_path: Path, is_path: bool, colorspace: qoi.QOIColorSpace, is_rgba: bool):
     tmp_path = str(tmp_path) + ".qoi"
     img = RGBA if is_rgba else RGB
@@ -29,9 +27,7 @@ def test_write_read(tmp_path: Path, is_path: bool, colorspace: qoi.QOIColorSpace
 
 
 @pytest.mark.parametrize("is_rgba", [True, False])
-@pytest.mark.parametrize(
-    "colorspace", [qoi.QOIColorSpace.SRGB, qoi.QOIColorSpace.LINEAR, qoi.QOIColorSpace.SRGB_LINEAR_ALPHA, None]
-)
+@pytest.mark.parametrize("colorspace", [qoi.QOIColorSpace.SRGB, qoi.QOIColorSpace.LINEAR, None])
 def test_encode_decode(colorspace: qoi.QOIColorSpace, is_rgba: bool):
     img = RGBA if is_rgba else RGB
     if colorspace is None:

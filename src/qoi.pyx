@@ -18,7 +18,6 @@ np.import_array()
 
 class QOIColorSpace(enum.Enum):
     SRGB = qoi.QOI_SRGB
-    SRGB_LINEAR_ALPHA = qoi.QOI_SRGB_LINEAR_ALPHA
     LINEAR = qoi.QOI_LINEAR
 
 cdef class PixelWrapper:
