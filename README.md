@@ -80,7 +80,6 @@ python -m twine upload --repository pypi dist/*
 - Add build/publish pipeline (inc. running tests) and wheels via `cibuildwheel`.
 - Create a `qoi` CLI
 - Add some benchmarks and compare with `qoi`
-- Why does `write` fail without a `.qoi` extension? If that's valid, raise a proper exception in Python so users know what's goin on.
 - Return the colorspace in read/decode.
 
 ## Discussion

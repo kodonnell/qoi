@@ -13,7 +13,7 @@ RGBA = np.random.randint(low=0, high=255, size=(224, 244, 4)).astype(np.uint8)
 @pytest.mark.parametrize("is_rgba", [True, False])
 @pytest.mark.parametrize("colorspace", [qoi.QOIColorSpace.SRGB, qoi.QOIColorSpace.LINEAR, None])
 def test_write_read(tmp_path: Path, is_path: bool, colorspace: qoi.QOIColorSpace, is_rgba: bool):
-    tmp_path = str(tmp_path) + ".qoi"
+    tmp_path = str(tmp_path) + "tmp.qoi"
     img = RGBA if is_rgba else RGB
     if is_path:
         tmp_path = Path(tmp_path)
@@ -42,6 +42,5 @@ def test_version():
     assert qoi.__version__ is not None
 
 
-@pytest.mark.xfail
 def test_writes_without_extension(tmp_path):
-    qoi.write(str(tmp_path), RGB, qoi.QOIColorSpace.SRGB)
+    qoi.write(str(tmp_path) + "tmp", RGB, qoi.QOIColorSpace.SRGB)
