@@ -70,6 +70,7 @@ rm -rf ./dist
 USE_CYTHON=1 python -m build --sdist
 python -m twine upload --repository testpypi dist/*
 python -m twine upload --repository pypi dist/*
+git push --follow-tags
 ```
 
 > NB: in future we'll have this automated as part of a Github Action etc.

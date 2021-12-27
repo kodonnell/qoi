@@ -10,7 +10,7 @@ from pathlib import Path
 try:
     from _version import __version__
 except:
-    warnings.warn("Couldn't import _version.__version__ - please ensure you build in a way the utilises setuptools_scm")
+    warnings.warn("Couldn't import _version.__version__ - please ensure you build in a way that utilises setuptools_scm")
     __version__ = None
 
 np.import_array()
