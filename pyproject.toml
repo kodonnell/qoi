@@ -19,5 +19,4 @@ build = "cp37-* cp38-* cp39-* cp310-*"
 skip = "*-musllinux_*"
 build-frontend = "build"
 environment = "USE_CYTHON=1"
-repair-wheel-command = "ls -l {project} && ls -l {project}/src && cat {project}/src/_version.py"
 build-verbosity = 3
