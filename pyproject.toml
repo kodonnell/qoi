@@ -16,9 +16,8 @@ write_to_template = "#define VERSION \"{version}\""
 test-requires = "pytest"
 test-command = "pytest {project}/tests"
 build = "cp37-* cp38-* cp39-* cp310-*"
-skip = "win_arm64" # arm64 is experimental on windows apparently
+skip = "win_arm64 *-musllinux_*" # arm64 is experimental on windows apparently, and skip musl
 archs = "all"
-skip = "*-musllinux_*"
 build-frontend = "build"
 environment = "USE_CYTHON=1"
 build-verbosity = 3
