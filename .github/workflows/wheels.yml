@@ -29,7 +29,7 @@ jobs:
         run: pip install build
 
       - name: Build sdist *and* wheel (even though we ignore it) to check we can confirm wheels from source.
-        run: USE_PYTHON=1 python -m build
+        run: USE_CYTHON=1 python -m build
 
       - uses: actions/upload-artifact@v2
         with:
