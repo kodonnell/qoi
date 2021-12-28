@@ -1,23 +1,14 @@
 name: Build and upload to PyPI
 
 on:
-  # Trigger the workflow on push or pull request on the main branch, or a tag
   push:
     branches:
       - main
     tags:
-      - v*
+      - 'v[0-9]+.[0-9]+.[0-9]+*'
   pull_request:
     branches:
       - main
-
-# Alternatively, to publish when a (published) GitHub Release is created, use the following:
-# on:
-#   push:
-#   pull_request:
-#   release:
-#     types:
-#       - published
 
 jobs:
   build_sdist:
@@ -51,40 +42,46 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-20.04, windows-2019, macos-10.15]
-
     steps:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0  # Optional, use if you use setuptools_scm https://stackoverflow.com/a/68959339
           submodules: true  # Optional, use if you have submodules
-
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.3.1
-
       - uses: actions/upload-artifact@v2
         with:
           path: ./wheelhouse/*.whl
 
-
-  upload_pypi_test:
+  create_release:
     needs: build_wheels
     runs-on: ubuntu-latest
-    # upload to PyPI on every tag starting with 'v'
     if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/v')
-    # alternatively, to publish when a GitHub Release is created, use the following rule:
-    # if: github.event_name == 'release' && github.event.action == 'published'
     steps:
       - uses: actions/download-artifact@v2
         with:
           name: artifact
           path: dist
 
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: dist/*
+
+  upload_pypi:
+    needs: build_wheels
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/v')
+    steps:
+      - uses: actions/download-artifact@v2
+        with:
+          name: artifact
+          path: dist
       - uses: pypa/gh-action-pypi-publish@v1.4.2
         with:
           user: __token__
           password: ${{ secrets.test_pypi_password }}
           repository_url: https://test.pypi.org/legacy/
-      
       - uses: pypa/gh-action-pypi-publish@v1.4.2
         with:
           user: __token__
