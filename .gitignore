@@ -2,8 +2,9 @@ build/
 dist/
 *.egg-info
 src/qoi.c
+src/qoi.h
 *.so
 __pycache__
 *.pyc
 # This gets overwritten continually by setuptools_scm - ignore it.
-src/_version.py 
+src/_version.h

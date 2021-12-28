@@ -1,13 +1,23 @@
 [build-system]
 requires = [
-    "setuptools >= 41.0.0",
+    "setuptools >= 45",
     "wheel >= 0.30.0",
-    "setuptools_scm >= 2",
+    "setuptools_scm >= 6.2",
     "numpy >= 1.20.0",
     "Cython"
 ]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools_scm]
-write_to = "src/_version.py"
-write_to_template = "__version__ = \"{version}\""
+write_to = "src/_version.h"
+write_to_template = "#define VERSION \"{version}\""
+
+[tool.cibuildwheel]
+test-requires = "pytest"
+test-command = "pytest {project}/tests"
+build = "cp37-* cp38-* cp39-* cp310-*"
+# arm64 is experimental on windows apparently, skip musl, and cp310-win32 fails so ignore for now, and ignore the non-standard linux builds (as they slow it down a lot!)
+skip = "*win_arm64* *-musllinux_* *cp310-win32* *s390x* *ppc64le* *aarch64*"
+build-frontend = "build"
+environment = "USE_CYTHON=1"
+build-verbosity = 3

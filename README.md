@@ -32,55 +32,33 @@ assert np.array_equal(rgb, rgb_decoded)
 
 ## Developing
 
-### Clone
 ```sh
 git clone --recursive https://github.com/kodonnell/qoi/
-```
-
-### Dev
-```sh
 USE_CYTHON=1 pip install -e .[dev]
-# Make your changes, and ensure you re-run the above if it's to the cython files ...
-```
-
-
-### Test
-```sh
 pytest .
 ```
 
-### Build and publish
-
-We're using `setuptools_scm` for versioning which basically means, once you're happy with your code and it's passing tests, first:
-
-```
-rm -rf ./build
-USE_CYTHON=1 python -m build
-```
-
-This checks that the code compiles *from the sdist that gets created*. This is important if you're messing round with build options etc. 
-
-Then
+We use `cibuildwheel` to build all the wheels, which runs in a Github action. If you want to check this succeeds locally, you can try (untested):
 
 ```sh
-git commit -a -m "..., ready for release!"
-git tag "vX.X.X"
-rm -rf ./build
-rm -rf ./dist
-USE_CYTHON=1 python -m build --sdist
-python -m twine upload --repository testpypi dist/*
-python -m twine upload --repository pypi dist/*
+cibuildwheel --platform linux .
 ```
 
-> NB: in future we'll have this automated as part of a Github Action etc.
+Finally, when you're happy, submit a PR.
 
+### Publish
+
+This currently is all automatic, and just needs a new tag pushed to Github in the `vX.X.X` format.
 
 ## TODO:
 
-- Add build/publish pipeline (inc. running tests) and wheels via `cibuildwheel`.
+- Fix the `cython` project structure. I had to try a bunch of things to get the version (from `setuptools_scm` in) but it feels very fragile. I'd prefer everything in an `__init__.py` (defining imports and `__all__` etc.) but that doesn't seem to work. I also don't get why this is working as it is - I feel like there's some package/namespace magic going on (e.g. the files being called `qoi.p*` is important), but haven't been able to fix it. See maybe https://stackoverflow.com/questions/33555927/cython-relative-cimport-beyond-main-package-is-not-allowed ? Also, I think our use of `src` might be tripping us up (i.e. still valid, but needs more obscure fixing than just out-of-the-box).
+- Get `cp310-win32 ` building ...
 - Create a `qoi` CLI
 - Add some benchmarks and compare with `qoi`
-- Return the colorspace in read/decode.
+- Automatically create release on github when push a tag v*? 
+- `setuptools_scm_git_archive`?
+- Get cibuildwheels to do a build without `--wheel` option to ensure the source distribution is good.
 
 ## Discussion
 
