@@ -82,7 +82,6 @@ git push --follow-tags
 - Get `cp310-win32 ` building ...
 - Create a `qoi` CLI
 - Add some benchmarks and compare with `qoi`
-- Return the colorspace in read/decode.
 
 ## Discussion
 
