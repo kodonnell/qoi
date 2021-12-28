@@ -53,7 +53,7 @@ jobs:
           path: ./wheelhouse/*.whl
 
 
-  upload_pypi:
+  upload_pypi_test:
     needs: [build_wheels, build_sdist]
     runs-on: ubuntu-latest
     # upload to PyPI on every tag starting with 'v'
@@ -69,5 +69,10 @@ jobs:
       - uses: pypa/gh-action-pypi-publish@v1.4.2
         with:
           user: __token__
+          password: ${{ secrets.test_pypi_password }}
+          repository_url: https://test.pypi.org/legacy/
+      
+      - uses: pypa/gh-action-pypi-publish@v1.4.2
+        with:
+          user: __token__
           password: ${{ secrets.pypi_password }}
-          # To test: repository_url: https://test.pypi.org/legacy/
