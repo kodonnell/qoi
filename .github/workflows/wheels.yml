@@ -25,8 +25,8 @@ jobs:
       - name: Install pypa/build
         run: pip install build
 
-      - name: Build sdist
-        run: python -m build --sdist
+      - name: Build sdist *and* wheel (even though we ignore it) to check we can confirm wheels from source.
+        run: USE_PYTHON=1 python -m build
 
       - uses: actions/upload-artifact@v2
         with:
