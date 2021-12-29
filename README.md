@@ -1,3 +1,5 @@
+[![PyPI version fury.io](https://badge.fury.io/py/qoi.svg)](https://pypi.python.org/pypi/qoi/)
+
 # QOI
 
 A simple Python wrapper around [qoi](https://github.com/phoboslab/qoi), the "Quite OK Image" format.
