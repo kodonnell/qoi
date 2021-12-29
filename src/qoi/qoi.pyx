@@ -1,4 +1,4 @@
-cimport qoi
+cimport qoi.qoi as qoi
 import numpy as np
 cimport numpy as np
 from libc.stdlib cimport free
@@ -6,11 +6,9 @@ from cpython cimport PyObject, Py_INCREF
 import enum
 import warnings
 from pathlib import Path
-from benchmark import benchmark
 
 np.import_array()
 
-__version__ = str(qoi.VERSION)
 
 class QOIColorSpace(enum.Enum):
     SRGB = qoi.QOI_SRGB
