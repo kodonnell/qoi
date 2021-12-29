@@ -47,4 +47,6 @@ def test_writes_without_extension(tmp_path):
 
 
 def test_benchmark():
-    qoi.benchmark(opencv=False, pil=False)
+    from qoi.benchmark import benchmark
+
+    benchmark(opencv=False, pil=False)
