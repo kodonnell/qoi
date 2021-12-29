@@ -64,7 +64,6 @@ When you're on `main` on your local, `git tag vX.X.X` then `git push origin vX.X
 - Add some benchmarks and compare with `qoi`
 - Automatically create release on github when push a tag v*? 
 - `setuptools_scm_git_archive`?
-- Get cibuildwheels to do a build without `--wheel` option to ensure the source distribution is good.
 
 ## Discussion
 
