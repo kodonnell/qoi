@@ -48,7 +48,11 @@ Finally, when you're happy, submit a PR.
 
 ### Publish
 
-This currently is all automatic, and just needs a new tag pushed to Github in the `vX.X.X` format.
+When you're on `main` on your local, `git tag vX.X.X` then `git push origin vX.X.X`. This pushes the tag which triggers the full GitHub Action and:
+
+- Builds source distribution and wheels (for various platforms)
+- Pushes to PyPI
+- Creates a new release with the appropriate artifacts attached.
 
 ## TODO:
 
