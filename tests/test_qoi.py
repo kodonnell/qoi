@@ -44,3 +44,7 @@ def test_version():
 
 def test_writes_without_extension(tmp_path):
     qoi.write(str(tmp_path) + "tmp", RGB, qoi.QOIColorSpace.SRGB)
+
+
+def test_benchmark():
+    qoi.benchmark(opencv=False, pil=False)

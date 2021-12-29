@@ -2,7 +2,7 @@
 
 # QOI
 
-A simple Python wrapper around [qoi](https://github.com/phoboslab/qoi), the "Quite OK Image" format.
+A simple Python wrapper around [qoi](https://github.com/phoboslab/qoi), the "Quite OK Image" format. 
 
 ## Install
 
@@ -30,7 +30,42 @@ assert np.array_equal(rgb, rgb_read)
 bites = qoi.encode(rgb)
 rgb_decoded = qoi.decode(bites)
 assert np.array_equal(rgb, rgb_decoded)
+
+# Benchmarking
+qoi.benchmark()  # Check out the arguments if you're interested
 ```
+
+## Benchmarks
+
+If we consider lossless, then we're generally comparing with PNG. Yup, there are others, but they're not as common. Benchmarks:
+
+| Test image                | Method | Format | Input (kb) | Encode (ms) | Encode (kb) | Decode (ms) |
+| ------------------------- | ------ | ------ | ---------- | ----------- | ----------- | ----------- |
+| all black ('best' case)   | PIL    | png    | 6075.0     | 35.54       | 6.0         | 14.94       |
+| all black ('best' case)   | opencv | png    | 6075.0     | 19.93       | 7.7         | 15.18       |
+| all black ('best' case)   | qoi    | qoi    | 6075.0     | 3.93        | 32.7        | 2.41        |
+| random noise (worst case) | PIL    | png    | 6075.0     | 272.33      | 6084.5      | 42.28       |
+| random noise (worst case) | opencv | png    | 6075.0     | 58.33       | 6086.9      | 12.93       |
+| random noise (worst case) | qoi    | qoi    | 6075.0     | 15.71       | 8096.1      | 8.04        |
+
+So `qoi` isn't far off PNG in terms of compression, but 4x-20x faster to encode and 1.5x-6x faster to decode.
+
+> NB:
+> 1. There's additional overhead here with PIL images being converted back to an array as the return type, to be consistent. In some sense, this isn't fair, as PIL will be faster if you're dealing with PIL images. On the other hand, if your common use case involves arrays (e.g. for computer vision) then it's reasonable.
+> 2. Produced with `qoi.benchmark(jpg=False)` on an i7-9750H. Not going to the point of optimised OpenCV/PIL (e.g. SIMD, or `pillow-simd`) as the results are clear enough for this 'normal' scenario. If you want to dig further, go for it! You can easily run these tests yourself.
+
+If we consider lossy compression, again, JPEG is usually what we're comparing with. This isn't really a far comparison as QOI is lossless and JPEG is lossy, but let's see.
+
+| Test image                | Method | Format | Input (kb) | Encode (ms) | Encode (kb) | Decode (ms) |
+| ------------------------- | ------ | ------ | ---------- | ----------- | ----------- | ----------- |
+| all black ('best' case)   | PIL    | jpg    | 6075.0     | 30.33       | 32.5        | 18.44       |
+| all black ('best' case)   | opencv | jpg    | 6075.0     | 21.52       | 32.5        | 14.31       |
+| all black ('best' case)   | qoi    | qoi    | 6075.0     | 4.29        | 32.7        | 2.60        |
+| random noise (worst case) | PIL    | jpg    | 6075.0     | 97.80       | 1217.3      | 45.55       |
+| random noise (worst case) | opencv | jpg    | 6075.0     | 39.62       | 2376.2      | 38.31       |
+| random noise (worst case) | qoi    | qoi    | 6075.0     | 19.34       | 8096.1      | 7.90        |
+
+Here we see that `qoi` is losing out considerably in compression, as expected for lossy vs lossless. Nonetheless, `qoi` is still 2x-6x faster to encode, and 5x-7x faster to decode. So, there are definitely use cases where `qoi` may still make sense over JPEG ... especially if you want lossless.
 
 ## Developing
 
@@ -48,7 +83,7 @@ cibuildwheel --platform linux .
 
 Finally, when you're happy, submit a PR.
 
-### Publish
+### Publishing
 
 When you're on `main` on your local, `git tag vX.X.X` then `git push origin vX.X.X`. This pushes the tag which triggers the full GitHub Action and:
 
@@ -61,9 +96,10 @@ When you're on `main` on your local, `git tag vX.X.X` then `git push origin vX.X
 - Fix the `cython` project structure. I had to try a bunch of things to get the version (from `setuptools_scm` in) but it feels very fragile. I'd prefer everything in an `__init__.py` (defining imports and `__all__` etc.) but that doesn't seem to work. I also don't get why this is working as it is - I feel like there's some package/namespace magic going on (e.g. the files being called `qoi.p*` is important), but haven't been able to fix it. See maybe https://stackoverflow.com/questions/33555927/cython-relative-cimport-beyond-main-package-is-not-allowed ? Also, I think our use of `src` might be tripping us up (i.e. still valid, but needs more obscure fixing than just out-of-the-box).
 - Get `cp310-win32 ` building ...
 - Create a `qoi` CLI
-- Add some benchmarks and compare with `qoi`
+- Benchmarks - add real images, and also compare performance with QOI to see overhead of python wrapper.
 - Automatically create release on github when push a tag v*? 
 - `setuptools_scm_git_archive`?
+- Code completion?
 
 ## Discussion
 

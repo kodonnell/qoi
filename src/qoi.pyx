@@ -6,6 +6,7 @@ from cpython cimport PyObject, Py_INCREF
 import enum
 import warnings
 from pathlib import Path
+from benchmark import benchmark
 
 np.import_array()
 
