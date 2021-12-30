@@ -10,5 +10,3 @@ cdef extern from "phoboslab_qoi/qoi.h":
     void *qoi_decode(const void *data, int size, qoi_desc *desc, int channels)
     int QOI_SRGB
     int QOI_LINEAR 
-cdef extern from "_version.h":
-    char* VERSION

@@ -28,7 +28,7 @@ def no_cythonize(extensions, **_ignore):
     return extensions
 
 
-extensions = [Extension("qoi", sources=["src/qoi.pyx", "src/implementation.c"])]
+extensions = [Extension("qoi.qoi", sources=["src/qoi/qoi.pyx", "src/qoi/implementation.c"])]
 
 
 if USE_CYTHON:

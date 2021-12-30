@@ -9,8 +9,8 @@ requires = [
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools_scm]
-write_to = "src/_version.h"
-write_to_template = "#define VERSION \"{version}\""
+write_to = "src/qoi/_version.py"
+write_to_template = "__version__ = \"{version}\""
 
 [tool.cibuildwheel]
 test-requires = "pytest"
