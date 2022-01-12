@@ -4,8 +4,8 @@
 
 A simple Python wrapper around [qoi](https://github.com/phoboslab/qoi), the "Quite OK Image" image format. It's
 
-- Lossless with comparable compression to PNG.
-- Fast! It encodes 10x faster and decodes around 5x faster than PNG in OpenCV or PIL. It's still a whole lot faster than JPEG, even though that's lossy.
+- Lossless with comparable compression to PNG, but fast! It encodes 10x faster and decodes around 5x faster than PNG in OpenCV or PIL.
+- You can make it lossy with a simple trick, and then you can get similar compression to JPEG but a whole lot faster. (These number vary a lot depending on how "lossy" you make JPEG or QOI). That's cool.
 
 ## Install
 
@@ -43,37 +43,42 @@ benchmark()  # Check out the arguments if you're interested
 
 If we consider lossless, then we're generally comparing with PNG. Yup, there are others, but they're not as common. Benchmarks:
 
-| Test image                | Method | Format | Input (kb) | Encode (ms) | Encode (kb) | Decode (ms) |
-| ------------------------- | ------ | ------ | ---------- | ----------- | ----------- | ----------- |
-| all black ('best' case)   | PIL    | png    | 6075.0     | 35.54       | 6.0         | 14.94       |
-| all black ('best' case)   | opencv | png    | 6075.0     | 19.93       | 7.7         | 15.18       |
-| all black ('best' case)   | qoi    | qoi    | 6075.0     | 3.93        | 32.7        | 2.41        |
-| random noise (worst case) | PIL    | png    | 6075.0     | 272.33      | 6084.5      | 42.28       |
-| random noise (worst case) | opencv | png    | 6075.0     | 58.33       | 6086.9      | 12.93       |
-| random noise (worst case) | qoi    | qoi    | 6075.0     | 15.71       | 8096.1      | 8.04        |
+| Test image                | Method | Format | Input (kb) | Encode (ms) | Encode (kb) | Decode (ms) | SSIM |
+| ------------------------- | ------ | ------ | ---------- | ----------- | ----------- | ----------- | ---- |
+| all black ('best' case)   | PIL    | png    | 6075.0     | 37.75       | 6.0         | 16.04       | 1.00 |
+| all black ('best' case)   | opencv | png    | 6075.0     | 23.82       | 7.7         | 17.93       | 1.00 |
+| all black ('best' case)   | qoi    | qoi    | 6075.0     | 4.13        | 32.7        | 2.67        | 1.00 |
+| koi photo                 | PIL    | png    | 6075.0     | 849.07      | 2821.5      | 85.46       | 1.00 |
+| koi photo                 | opencv | png    | 6075.0     | 95.24       | 3121.5      | 44.34       | 1.00 |
+| koi photo                 | qoi    | qoi    | 6075.0     | 28.37       | 3489.0      | 17.19       | 1.00 |
+| random noise (worst case) | PIL    | png    | 6075.0     | 300.37      | 6084.5      | 46.30       | 1.00 |
+| random noise (worst case) | opencv | png    | 6075.0     | 63.72       | 6086.9      | 14.01       | 1.00 |
+| random noise (worst case) | qoi    | qoi    | 6075.0     | 16.16       | 8096.1      | 7.67        | 1.00 |
 
 So `qoi` isn't far off PNG in terms of compression, but 4x-20x faster to encode and 1.5x-6x faster to decode.
 
 > NB:
 > 1. There's additional overhead here with PIL images being converted back to an array as the return type, to be consistent. In some sense, this isn't fair, as PIL will be faster if you're dealing with PIL images. On the other hand, if your common use case involves arrays (e.g. for computer vision) then it's reasonable.
-> 2. Produced with `qoi.benchmark.benchmark(jpg=False)` on an i7-9750H. Not going to the point of optimised OpenCV/PIL (e.g. SIMD, or `pillow-simd`) as the results are clear enough for this 'normal' scenario. If you want to dig further, go for it! You can easily run these tests yourself.
+> 2. Produced with `python src/qoi/benchmark.py --implementations=qoi,opencv,pil --formats=png,qoi` on an i7-9750H. Not going to the point of optimised OpenCV/PIL (e.g. SIMD, or `pillow-simd`) as the results are clear enough for this 'normal' scenario. If you want to dig further, go for it! You can easily run these tests yourself.
 
-If we consider lossy compression, again, JPEG is usually what we're comparing with. This isn't really a far comparison as QOI is lossless and JPEG is lossy, but let's see.
+If we consider lossy compression, again, JPEG is usually what we're comparing with. Normally, it'd be unfair to compare QOI with JPEG as QOI is lossless, however we can do a slight trick to make QOI lossy - downscale the image, then encode it, then upsample it by the same amount after decoding. You can see we've implemented that below with a downscaling to 40% and JPEG quality of 80 (which results in them having the same visual compression i.e. SSIM). So, results (only on `koi photo` as the rest are less meaningful/fair for lossy):
 
-| Test image                | Method | Format | Input (kb) | Encode (ms) | Encode (kb) | Decode (ms) |
-| ------------------------- | ------ | ------ | ---------- | ----------- | ----------- | ----------- |
-| all black ('best' case)   | PIL    | jpg    | 6075.0     | 30.33       | 32.5        | 18.44       |
-| all black ('best' case)   | opencv | jpg    | 6075.0     | 21.52       | 32.5        | 14.31       |
-| all black ('best' case)   | qoi    | qoi    | 6075.0     | 4.29        | 32.7        | 2.60        |
-| random noise (worst case) | PIL    | jpg    | 6075.0     | 97.80       | 1217.3      | 45.55       |
-| random noise (worst case) | opencv | jpg    | 6075.0     | 39.62       | 2376.2      | 38.31       |
-| random noise (worst case) | qoi    | qoi    | 6075.0     | 19.34       | 8096.1      | 7.90        |
+| Test image                | Method              | Format   | Input (kb) | Encode (ms) | Encode (kb) | Decode (ms) | SSIM |
+| ------------------------- | ------------------- | -------- | ---------- | ----------- | ----------- | ----------- | ---- |
+| koi photo                 | PIL                 | jpg @ 80 | 6075.0     | 47.67       | 275.2       | 24.01       | 0.94 |
+| koi photo                 | opencv              | jpg @ 80 | 6075.0     | 24.03       | 275.3       | 19.58       | 0.94 |
+| koi photo                 | qoi                 | qoi      | 6075.0     | 23.17       | 3489.0      | 12.94       | 1.00 |
+| koi photo                 | qoi-lossy-0.40x0.40 | qoi      | 6075.0     | 4.38        | 667.5       | 2.96        | 0.94 |
 
-Here we see that `qoi` is losing out considerably in compression, as expected for lossy vs lossless. Nonetheless, `qoi` is still 2x-6x faster to encode, and 5x-7x faster to decode. So, there are definitely use cases where `qoi` may still make sense over JPEG ... especially if you want lossless.
+Here we see that lossless `qoi` is losing out considerably in compression, as expected for lossy vs lossless. Also, `qoi` is only 1x-2x faster of encoding, and 1.5x-2x faster for decoding. However, it's important to note that this varies a lot depending on the jpeg quality specified - here it's 80 but the default for OpenCV is actually 95 which is 3x worse compression and a bit slower. 
+
+However, that's still lossy vs lossless! If you look at `qoi-lossy-0.40x0.40` where we downscale as above, you can see that it can perform really well. The compression ratio is now only 3x that of JPEG (and 5x better than lossless QOI, and also the same as the default OpenCV JPEG encoding at a quality of 95), but it's so fast - 5x-10x faster encoding, and 7x-8x faster decoding.
+
+Anyway, there are definitely use cases where `qoi` may still make sense over JPEG. Even lossless QOI can be worth it if size isn't an issue, as it's a bit faster. But if you use the "lossy" QOI, you're getting "comparable" (depending on JPEG quality) compression but much faster.
 
 > NB:
 > 1. See above re additional PIL overhead.
-> 2. Produced with `qoi.benchmark.benchmark(png=False)` on an i7-9750H. Not going to the point of optimised OpenCV/PIL (e.g. SIMD, or `pillow-simd`, `libjpeg-turbo`, different JPEG qualities, etc.) as the results are clear enough for this 'normal' scenario. If you want to dig further, go for it! You can easily run these tests yourself.
+> 2. Produced with `python src/qoi/benchmark.py --images=koi --implementations=qoi,qoi-lossy,opencv,pil --formats=jpg,qoi --qoi-lossy-scale=0.4 --jpeg-quality=0.8` on an i7-9750H. Not going to the point of optimised OpenCV/PIL (e.g. SIMD, or `pillow-simd`, `libjpeg-turbo`, different JPEG qualities, etc.) as the results are clear enough for this 'normal' scenario. If you want to dig further, go for it! You can easily run these tests yourself.
 
 ## Developing
 
@@ -101,6 +106,7 @@ When you're on `main` on your local, `git tag vX.X.X` then `git push origin vX.X
 
 ## TODO:
 
+- Make `benchmark.py` a CLI in setup.py
 - Get `cp310-win32 ` building ...
 - Create a `qoi` CLI
 - Benchmarks - add real images, and also compare performance with QOI to see overhead of python wrapper.

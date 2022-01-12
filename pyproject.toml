@@ -13,7 +13,7 @@ write_to = "src/qoi/_version.py"
 write_to_template = "__version__ = \"{version}\""
 
 [tool.cibuildwheel]
-test-requires = "pytest"
+test-requires = "pytest scikit-image"
 test-command = "pytest {project}/tests"
 build = "cp37-* cp38-* cp39-* cp310-*"
 # arm64 is experimental on windows apparently, skip musl, and cp310-win32 fails so ignore for now, and ignore the non-standard linux builds (as they slow it down a lot!)
