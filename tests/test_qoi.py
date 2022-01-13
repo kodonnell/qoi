@@ -49,4 +49,4 @@ def test_writes_without_extension(tmp_path):
 def test_benchmark():
     from qoi.benchmark import benchmark
 
-    benchmark(implementations=["qoi", "qoi-lossy"])
+    benchmark(implementations=["qoi"])
