@@ -270,7 +270,8 @@ def benchmark(
         rgb = np.random.randint(low=0, high=255, size=size, dtype=np.uint8)
         results += list(progress(bench_methods(rgb, name, **kwargs)))
     name = "koi photo"
-    if p.match(name):
+    # Nedd opencv to load image
+    if p.match(name) and OPENCV_AVAILABLE:
         rgb = cv2.cvtColor(cv2.imread(str(Path(__file__).parent.resolve() / "koi.png")), cv2.COLOR_BGR2RGB)
         results += list(progress(bench_methods(rgb, name, **kwargs)))
     totable(results)
