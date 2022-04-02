@@ -132,6 +132,6 @@ For now, let's rock with `qoi` because
 
 See [here](https://hynek.me/articles/testing-packaging/) and [here](https://blog.ionelmc.ro/2014/05/25/python-packaging/#the-structure). I didn't read all of it, but yeh, `import qoi` is annoying when there's also a folder called `qoi`.
 
-### `USE_CTYHON=1`?
+### `USE_CYTHON=1`?
 
 See [here](https://cython.readthedocs.io/en/latest/src/userguide/source_files_and_compilation.html#distributing-cython-modules). Fair point.
