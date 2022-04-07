@@ -1,10 +1,9 @@
 cimport qoi.qoi as qoi
 import numpy as np
 cimport numpy as np
-from libc.stdlib cimport free
 from cpython cimport PyObject, Py_INCREF
+from cpython.mem cimport PyMem_Free
 import enum
-import warnings
 from pathlib import Path
 
 np.import_array()
@@ -17,7 +16,7 @@ class QOIColorSpace(enum.Enum):
 cdef class PixelWrapper:
     cdef void* pixels
 
-    cdef as_ndarray(self, int height, int width, int channels, char * pixels):
+    cdef np.ndarray as_ndarray(self, int height, int width, int channels, char * pixels):
         cdef np.npy_intp shape[3]
         cdef np.ndarray ndarray
         self.pixels = pixels
@@ -28,9 +27,9 @@ cdef class PixelWrapper:
         return ndarray
 
     def __dealloc__(self):
-        free(self.pixels)
+        PyMem_Free(self.pixels)
 
-cpdef int write(filename, np.ndarray rgb, colorspace: QOIColorSpace = QOIColorSpace.SRGB) except? -1:
+cpdef int write(filename, unsigned char[:,:,::1] rgb, colorspace: QOIColorSpace = QOIColorSpace.SRGB) except? -1:
     cdef bytes filename_bytes 
     cdef char* _filename
     cdef qoi.qoi_desc desc
@@ -44,22 +43,22 @@ cpdef int write(filename, np.ndarray rgb, colorspace: QOIColorSpace = QOIColorSp
     filename_bytes = str(filename).encode('utf8')
     _filename = filename_bytes
     
-    desc.height = rgb.shape[0]
-    desc.width = rgb.shape[1]
-    desc.channels = rgb.shape[2]
+    desc.height = <unsigned int>rgb.shape[0]
+    desc.width = <unsigned int>rgb.shape[1]
+    desc.channels = <unsigned char>rgb.shape[2]
     desc.colorspace = colorspace.value
     
-    if not rgb.flags['C_CONTIGUOUS']:
+    # if not rgb.flags['C_CONTIGUOUS']:
         # Makes a contiguous copy of the numpy array so we can process bytes directly:
-        rgb = np.ascontiguousarray(rgb)
+        # rgb = np.ascontiguousarray(rgb)
     
-    bytes_written = qoi.qoi_write(_filename, rgb.data, &desc)
+    cdef int bytes_written = qoi.qoi_write(_filename, &rgb[0][0][0], &desc)
     if bytes_written == 0:
         raise RuntimeError("Failed to write!")
     return bytes_written
 
-cpdef np.ndarray read(filename, int channels = 0):
-    # TODO: how to return desc.colorspace?
+cpdef np.ndarray read(filename, int channels = 0, unsigned char[::1] colorspace = bytearray(1)):
+    # TODO: how to return desc.colorspace? A: How about return a tuple of ndarray and a wrapper around struct qoi_desc? or we can add another param like char[:] to simulate pointer
     cdef bytes filename_bytes
     cdef char* _filename
     cdef qoi.qoi_desc desc
@@ -77,12 +76,13 @@ cpdef np.ndarray read(filename, int channels = 0):
     if pixels is NULL:
         raise RuntimeError("Failed to read!")
     try:
+        colorspace[0] = desc.colorspace
         return PixelWrapper().as_ndarray(desc.height, desc.width, desc.channels, pixels)
     except:
         if pixels is not NULL:
-            free(pixels)
+            PyMem_Free(pixels)
 
-cpdef bytes encode(np.ndarray rgb, colorspace: QOIColorSpace = QOIColorSpace.SRGB):
+cpdef bytes encode(unsigned char[:,:,::1] rgb, colorspace: QOIColorSpace = QOIColorSpace.SRGB):
     cdef qoi.qoi_desc desc
     cdef int ret, size
     cdef char * encoded
@@ -90,33 +90,33 @@ cpdef bytes encode(np.ndarray rgb, colorspace: QOIColorSpace = QOIColorSpace.SRG
     if not isinstance(colorspace, QOIColorSpace):
         raise ValueError("colorspace should be an instance of QOIColorSpace")
 
-    desc.height = rgb.shape[0]
-    desc.width = rgb.shape[1]
-    desc.channels = rgb.shape[2]
+    desc.height = <unsigned int>rgb.shape[0]
+    desc.width = <unsigned int>rgb.shape[1]
+    desc.channels = <unsigned char>rgb.shape[2]
     desc.colorspace = colorspace.value
 
-    if not rgb.flags['C_CONTIGUOUS']:
-        rgb = np.ascontiguousarray(rgb) # makes a contiguous copy of the numpy array so we can read memory directly
-    encoded = <char *>qoi.qoi_encode(rgb.data, &desc, &size)
+    # if not rgb.flags['C_CONTIGUOUS']:
+    #     rgb = np.ascontiguousarray(rgb) # makes a contiguous copy of the numpy array so we can read memory directly
+    encoded = <char *>qoi.qoi_encode(&rgb[0][0][0], &desc, &size)
     if encoded is NULL or size <= 0:
         raise RuntimeError("Failed to encode!")
     try:
-        # TODO: does this create a copy?
+        # TODO: does this create a copy? A: Yes, this equivalent to PyBytes_FromStringAndSize
         return encoded[:size] # :size is important here - tells cython about size, and handles null bytes
     finally:
-        free(encoded)
+        PyMem_Free(encoded)
 
-cpdef np.ndarray decode(bytes data, int channels = 0):
-    # TODO: what to do about desc.colorspace?
+cpdef np.ndarray decode(const unsigned char[::1] data, int channels = 0, unsigned char[::1] colorspace = bytearray(1)):
+    # TODO: what to do about desc.colorspace? A: How about return a tuple of ndarray and a wrapper around struct qoi_desc? or we can add another param like char[:] to simulate pointer
     cdef qoi.qoi_desc desc
     cdef int ret
     cdef char * pixels
-    cdef char * cdata = data
-    pixels = <char *>qoi.qoi_decode(&((<char *>data)[0]), len(data), &desc, channels)
+    pixels = <char *>qoi.qoi_decode(&data[0], <int>data.shape[0], &desc, channels)
     if pixels is NULL:
         raise RuntimeError("Failed to decode!")
     try:
+        colorspace[0] = desc.colorspace
         return PixelWrapper().as_ndarray(desc.height, desc.width, desc.channels, pixels)
     except:
         if pixels is not NULL:
-            free(pixels)
+            PyMem_Free(pixels)

@@ -28,15 +28,26 @@ def no_cythonize(extensions, **_ignore):
     return extensions
 
 
-extensions = [Extension("qoi.qoi", sources=["src/qoi/qoi.pyx", "src/qoi/implementation.c"])]
+extensions = [Extension("qoi.qoi", sources=["src/qoi/qoi.pyx", "src/qoi/implementation.c"], define_macros=[
+    ("QOI_MALLOC", "PyMem_Malloc"), ("QOI_FREE", "PyMem_Free")])]
 
 
 if USE_CYTHON:
-    compiler_directives = {"language_level": 3, "embedsignature": True}
+    compiler_directives = {"language_level": 3, "embedsignature": True, "boundscheck": False, "wraparound": False}
     extensions = cythonize(extensions, compiler_directives=compiler_directives)
 else:
     extensions = no_cythonize(extensions)
 
+# Patch header, in order to use PyMem_Malloc
+should_patch = False
+with open("src/qoi/phoboslab_qoi/qoi.h", "r") as f:
+    data = f.read()
+    if "Python.h" not in data:
+        should_patch = True
+        data = "#include \"Python.h\"\r\n" + data
+if should_patch:
+    with open("src/qoi/phoboslab_qoi/qoi.h", "w") as f:
+        data = f.write(data)
 
 with open("requirements.txt") as f:
     install_requires = f.read().strip().split("\n")
