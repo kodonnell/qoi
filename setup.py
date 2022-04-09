@@ -33,7 +33,7 @@ extensions = [Extension("qoi.qoi", sources=["src/qoi/qoi.pyx", "src/qoi/implemen
 
 
 if USE_CYTHON:
-    compiler_directives = {"language_level": 3, "embedsignature": True, "boundscheck": False, "wraparound": False}
+    compiler_directives = {"language_level": 3, "embedsignature": True, "boundscheck": False, "wraparound": False, "cdivision": True}
     extensions = cythonize(extensions, compiler_directives=compiler_directives)
 else:
     extensions = no_cythonize(extensions)

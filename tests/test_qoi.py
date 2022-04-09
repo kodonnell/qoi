@@ -38,6 +38,23 @@ def test_encode_decode(colorspace: qoi.QOIColorSpace, is_rgba: bool):
     assert np.array_equal(img, img_decoded)
 
 
+@pytest.mark.parametrize("is_rgba", [True, False])
+@pytest.mark.parametrize("colorspace", [qoi.QOIColorSpace.SRGB, qoi.QOIColorSpace.LINEAR, None])
+def test_encode_decode_with_colorspace(colorspace: qoi.QOIColorSpace, is_rgba: bool):
+    img = RGBA if is_rgba else RGB
+    if colorspace is None:
+        bites = qoi.encode(img)
+    else:
+        bites = qoi.encode(img, colorspace)
+    data = bytearray(1)
+    img_decoded = qoi.decode(bites, colorspace=data)
+    if colorspace is not None:
+        assert data[0] == colorspace.value
+    else:
+        assert data[0] == qoi.QOIColorSpace.SRGB.value
+    assert np.array_equal(img, img_decoded)
+
+
 def test_version():
     assert qoi.__version__ is not None
 
