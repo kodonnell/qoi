@@ -77,7 +77,7 @@ cpdef np.ndarray read(filename, int channels = 0, unsigned char[::1] colorspace 
         raise RuntimeError("Failed to read!")
     try:
         colorspace[0] = desc.colorspace
-        return PixelWrapper().as_ndarray(desc.height, desc.width, desc.channels, pixels)
+        return PixelWrapper().as_ndarray(desc.height, desc.width, desc.channels if channels == 0 else channels, pixels)
     except:
         if pixels is not NULL:
             PyMem_Free(pixels)
@@ -116,7 +116,7 @@ cpdef np.ndarray decode(const unsigned char[::1] data, int channels = 0, unsigne
         raise RuntimeError("Failed to decode!")
     try:
         colorspace[0] = desc.colorspace
-        return PixelWrapper().as_ndarray(desc.height, desc.width, desc.channels, pixels)
+        return PixelWrapper().as_ndarray(desc.height, desc.width, desc.channels if channels == 0 else channels, pixels)
     except:
         if pixels is not NULL:
             PyMem_Free(pixels)
