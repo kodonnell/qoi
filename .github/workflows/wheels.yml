@@ -5,7 +5,7 @@ on:
     branches:
       - main
     tags:
-      - 'v[0-9]+.[0-9]+.[0-9]+*'
+      - "v[0-9]+.[0-9]+.[0-9]+*"
   pull_request:
     branches:
       - main
@@ -17,9 +17,9 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with:
-          fetch-depth: 0  # Optional, use if you use setuptools_scm https://stackoverflow.com/a/68959339
-          submodules: true  # Optional, use if you have submodules
-      
+          fetch-depth: 0 # Optional, use if you use setuptools_scm https://stackoverflow.com/a/68959339
+          submodules: true # Optional, use if you have submodules
+
       - name: Set up Python 3.8
         uses: actions/setup-python@v2
         with:
@@ -34,7 +34,7 @@ jobs:
       - uses: actions/upload-artifact@v2
         with:
           path: dist/*.tar.gz
-  
+
   build_wheels:
     needs: build_sdist
     name: Build wheels on ${{ matrix.os }}
@@ -45,8 +45,13 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with:
-          fetch-depth: 0  # Optional, use if you use setuptools_scm https://stackoverflow.com/a/68959339
-          submodules: true  # Optional, use if you have submodules
+          fetch-depth: 0 # Optional, use if you use setuptools_scm https://stackoverflow.com/a/68959339
+          submodules: true # Optional, use if you have submodules
+
+      - name: Install scipy dependencies on ubuntu-20.04
+        if: ${{ matrix.os == 'ubuntu-20.04' }}
+        run: sudo apt-get -y install gfortran libopenblas-dev liblapack-dev
+
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.3.1
       - uses: actions/upload-artifact@v2
