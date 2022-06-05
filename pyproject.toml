@@ -20,5 +20,8 @@ build = "cp37-* cp38-* cp39-* cp310-*"
 skip = "*win_arm64* *-musllinux_* *cp310-win32* *s390x* *ppc64le* *aarch64* *i686*"
 build-frontend = "build"
 environment = "USE_CYTHON=1"
-before_all_linux = "apt-get -y install gfortran libopenblas-dev liblapack-dev"
 build-verbosity = 3
+
+[tool.cibuildwheel.linux]
+# Install stuff for scipy:
+before-all = "apt-get -y install gfortran libopenblas-dev liblapack-dev"
