@@ -58,6 +58,7 @@ If we consider lossless, then we're generally comparing with PNG. Yup, there are
 So `qoi` isn't far off PNG in terms of compression, but 4x-20x faster to encode and 1.5x-6x faster to decode.
 
 > NB:
+>
 > 1. There's additional overhead here with PIL images being converted back to an array as the return type, to be consistent. In some sense, this isn't fair, as PIL will be faster if you're dealing with PIL images. On the other hand, if your common use case involves arrays (e.g. for computer vision) then it's reasonable.
 > 2. Produced with `python src/qoi/benchmark.py --implementations=qoi,opencv,pil --formats=png,qoi` on an i7-9750H. Not going to the point of optimised OpenCV/PIL (e.g. SIMD, or `pillow-simd`) as the results are clear enough for this 'normal' scenario. If you want to dig further, go for it! You can easily run these tests yourself.
 
@@ -70,13 +71,14 @@ If we consider lossy compression, again, JPEG is usually what we're comparing wi
 | koi photo                 | qoi                 | qoi      | 6075.0     | 23.17       | 3489.0      | 12.94       | 1.00 |
 | koi photo                 | qoi-lossy-0.40x0.40 | qoi      | 6075.0     | 4.38        | 667.5       | 2.96        | 0.94 |
 
-Here we see that lossless `qoi` is losing out considerably in compression, as expected for lossy vs lossless. Also, `qoi` is only 1x-2x faster of encoding, and 1.5x-2x faster for decoding. However, it's important to note that this varies a lot depending on the jpeg quality specified - here it's 80 but the default for OpenCV is actually 95 which is 3x worse compression and a bit slower. 
+Here we see that lossless `qoi` is losing out considerably in compression, as expected for lossy vs lossless. Also, `qoi` is only 1x-2x faster of encoding, and 1.5x-2x faster for decoding. However, it's important to note that this varies a lot depending on the jpeg quality specified - here it's 80 but the default for OpenCV is actually 95 which is 3x worse compression and a bit slower.
 
 However, that's still lossy vs lossless! If you look at `qoi-lossy-0.40x0.40` where we downscale as above, you can see that it can perform really well. The compression ratio is now only 3x that of JPEG (and 5x better than lossless QOI, and also the same as the default OpenCV JPEG encoding at a quality of 95), but it's so fast - 5x-10x faster encoding, and 7x-8x faster decoding.
 
 Anyway, there are definitely use cases where `qoi` may still make sense over JPEG. Even lossless QOI can be worth it if size isn't an issue, as it's a bit faster. But if you use the "lossy" QOI, you're getting "comparable" (depending on JPEG quality) compression but much faster.
 
 > NB:
+>
 > 1. See above re additional PIL overhead.
 > 2. Produced with `python src/qoi/benchmark.py --images=koi --implementations=qoi,qoi-lossy,opencv,pil --formats=jpg,qoi --qoi-lossy-scale=0.4 --jpeg-quality=0.8` on an i7-9750H. Not going to the point of optimised OpenCV/PIL (e.g. SIMD, or `pillow-simd`, `libjpeg-turbo`, different JPEG qualities, etc.) as the results are clear enough for this 'normal' scenario. If you want to dig further, go for it! You can easily run these tests yourself.
 
@@ -104,10 +106,9 @@ When you're on `main` on your local, `git tag vX.X.X` then `git push origin vX.X
 - Pushes to PyPI
 - Creates a new release with the appropriate artifacts attached.
 
-## TODO:
+## TODO
 
 - Make `benchmark.py` a CLI in setup.py
-- Get `cp310-win32 ` building ...
 - Create a `qoi` CLI
 - Benchmarks - add real images, and also compare performance with QOI to see overhead of python wrapper.
 - `setuptools_scm_git_archive`?
@@ -122,13 +123,13 @@ For now, this is just a simple wrapper. We'll leave the original project to do a
 
 ### On the name
 
-For now, let's rock with `qoi` because 
+For now, let's rock with `qoi` because
 
 - We're already in python, and the `py` in `pyqoi` seems redundant. For what it's worth, `3 < 5`.
 - `pyqoi` seems like a good name for a python-only version of QOI (useful for pypy etc.), which this isn't.
 - `qoi` is generally new so let's not overthink it for now. We can always rename later if needed.
 
-### What's up with `./src`?!
+### What's up with `./src`?
 
 See [here](https://hynek.me/articles/testing-packaging/) and [here](https://blog.ionelmc.ro/2014/05/25/python-packaging/#the-structure). I didn't read all of it, but yeh, `import qoi` is annoying when there's also a folder called `qoi`.
 
