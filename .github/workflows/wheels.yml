@@ -47,11 +47,6 @@ jobs:
         with:
           fetch-depth: 0 # Optional, use if you use setuptools_scm https://stackoverflow.com/a/68959339
           submodules: true # Optional, use if you have submodules
-
-      - name: Install scipy dependencies on ubuntu-20.04
-        if: ${{ matrix.os == 'ubuntu-20.04' }}
-        run: sudo apt-get -y install gfortran libopenblas-dev liblapack-dev
-
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.3.1
       - uses: actions/upload-artifact@v2
