@@ -7,7 +7,6 @@ from pathlib import Path
 from typing import List, OrderedDict
 
 import numpy as np
-from skimage.metrics import structural_similarity
 
 import qoi
 
@@ -17,7 +16,12 @@ try:
 
     OPENCV_AVAILABLE = True
 except ImportError:
-    warnings.warn("Couldn't find OpenCV - you can still run this, but OpenCV tests will be disabled.")
+    warnings.warn(
+        (
+            "Couldn't find OpenCV - you can still run this, but OpenCV tests/functionality will be disabled, including"
+            " lossy qoi (which uses OpenCV to resize the image)"
+        )
+    )
 
 PIL_AVAILABLE = False
 try:
@@ -26,6 +30,18 @@ try:
     PIL_AVAILABLE = True
 except ImportError:
     warnings.warn("Couldn't find PIL - you can still run this, but PIL tests will be disabled.")
+
+try:
+    from skimage.metrics import structural_similarity as img_similarity
+
+    similarity_name = "SSIM"
+except ImportError:
+    warnings.warn("Couldn't find skimage.metrics.structural_similarity so using MSE.")
+
+    def img_similarity(a, b, channel_axis=None):
+        return ((a - b) ** 2).mean()
+
+    similarity_name = "MSE"
 
 
 @dataclass
@@ -37,7 +53,7 @@ class TestResult:
     encode_ms: float
     encode_size: float
     decode_ms: float
-    ssim: float
+    img_similarity: float
 
 
 def timeit(f, warmup=3, tests=10):
@@ -61,7 +77,7 @@ def bench_qoi(rgb, test_name, warmup=3, tests=10):
         encode_ms=encode_ms,
         encode_size=len(bites),
         decode_ms=decode_ms,
-        ssim=structural_similarity(rgb, decoded, channel_axis=2),
+        img_similarity=img_similarity(rgb, decoded, channel_axis=2),
     )
 
 
@@ -83,7 +99,7 @@ def bench_qoi_lossy(rgb, test_name, warmup=3, tests=10, scale=0.5):
         encode_ms=encode_ms,
         encode_size=len(bites),
         decode_ms=decode_ms,
-        ssim=structural_similarity(rgb, decoded, channel_axis=2),
+        img_similarity=img_similarity(rgb, decoded, channel_axis=2),
     )
 
 
@@ -124,7 +140,7 @@ def bench_pil(rgb, test_name, warmup=3, tests=10, jpg=True, png=True, jpeg_quali
             encode_ms=encode_ms,
             encode_size=len(bites),
             decode_ms=decode_ms,
-            ssim=structural_similarity(rgb, decoded, channel_axis=2),
+            img_similarity=img_similarity(rgb, decoded, channel_axis=2),
         )
 
 
@@ -161,7 +177,7 @@ def bench_opencv(rgb, test_name, warmup=3, tests=10, jpg=True, png=True, jpeg_qu
             encode_ms=encode_ms,
             encode_size=len(bites),
             decode_ms=decode_ms,
-            ssim=structural_similarity(rgb, decoded, channel_axis=2),
+            img_similarity=img_similarity(rgb, decoded, channel_axis=2),
         )
 
 
@@ -185,7 +201,7 @@ def bench_methods(
         )
     if qoi and (implementations is None or "qoi" in implementations):
         yield from bench_qoi(rgb, test_name=name, warmup=warmup, tests=tests)
-    if qoi and (implementations is None or "qoi-lossy" in implementations):
+    if qoi and (implementations is None or "qoi-lossy" in implementations) and OPENCV_AVAILABLE:
         yield from bench_qoi_lossy(rgb, test_name=name, warmup=warmup, tests=tests, scale=qoi_lossy_scale)
 
 
@@ -202,7 +218,7 @@ def totable(results: List[TestResult]):
         encode_ms="Encode (ms)",
         encode_size="Encode (kb)",
         decode_ms="Decode (ms)",
-        ssim="SSIM",
+        img_similarity=similarity_name,
     )
 
     # Convert to dicts of strings
@@ -212,7 +228,7 @@ def totable(results: List[TestResult]):
         for k in fields(res):
             name = k.name
             v = getattr(res, name)
-            if name == "ssim" or name.endswith("_ms"):
+            if name == "img_similarity" or name.endswith("_ms"):
                 v = f"{v:.2f}"
             elif name.endswith("_size"):
                 v = f"{v/1024:.1f}"

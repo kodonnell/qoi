@@ -13,15 +13,11 @@ write_to = "src/qoi/_version.py"
 write_to_template = "__version__ = \"{version}\""
 
 [tool.cibuildwheel]
-test-requires = "pytest scikit-image"
+test-requires = "pytest"
 test-command = "pytest {project}/tests"
 build = "cp37-* cp38-* cp39-* cp310-*"
-# arm64 is experimental on windows apparently, skip musl, and cp310-win32 fails so ignore for now, and ignore the non-standard linux builds (as they slow it down a lot!)
-skip = "*win_arm64* *-musllinux_* *s390x* *ppc64le* *aarch64* *i686*"
+# skip musl and ignore the non-standard linux builds
+skip = "*-musllinux_* *s390x* *ppc64le*"
 build-frontend = "build"
 environment = "USE_CYTHON=1"
 build-verbosity = 3
-
-[tool.cibuildwheel.linux]
-# Install stuff for scipy:
-before-all = "apt-get -y install gfortran libopenblas-dev liblapack-dev || yum -y install blas-devel lapack-devel"
