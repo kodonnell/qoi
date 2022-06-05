@@ -24,4 +24,4 @@ build-verbosity = 3
 
 [tool.cibuildwheel.linux]
 # Install stuff for scipy:
-before-all = "apt-get -y install gfortran libopenblas-dev liblapack-dev"
+before-all = "apt-get -y install gfortran libopenblas-dev liblapack-dev || yum -y install gfortran libopenblas-dev liblapack-dev"
