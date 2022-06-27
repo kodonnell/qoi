@@ -3,8 +3,18 @@ requires = [
     "setuptools >= 45",
     "wheel >= 0.30.0",
     "setuptools_scm >= 6.2",
-    "numpy >= 1.20.0",
-    "Cython"
+    # Copied from https://github.com/scipy/scipy/blob/master/pyproject.toml
+    # NOTE: if you update this, you'll need to update install_requires in setup.py
+    "Cython>=0.29.21",
+    "numpy==1.19.5; python_version=='3.8' and platform_machine=='aarch64' and platform_python_implementation != 'PyPy'",
+    "numpy==1.20.0; python_version=='3.8' and platform_machine=='arm64' and platform_system=='Darwin'",
+    "numpy==1.20.0; python_version=='3.9' and platform_machine=='arm64' and platform_system=='Darwin'",
+    "numpy==1.22.0; platform_machine=='loongarch64'",
+    "numpy==1.19.5; python_version=='3.8' and (platform_machine!='arm64' or platform_system!='Darwin') and platform_machine!='aarch64' and platform_machine!='loongarch64' and platform_python_implementation != 'PyPy'",
+    "numpy==1.19.5; python_version=='3.9' and (platform_machine!='arm64' or platform_system!='Darwin') and platform_machine!='loongarch64' and platform_python_implementation != 'PyPy'",
+    "numpy==1.21.6; python_version=='3.10' and platform_machine!='loongarch64' and platform_python_implementation != 'PyPy'",
+    "numpy; python_version>='3.11'",
+    "numpy; python_version>='3.8' and platform_python_implementation=='PyPy'",
 ]
 build-backend = "setuptools.build_meta"
 
@@ -15,7 +25,7 @@ write_to_template = "__version__ = \"{version}\""
 [tool.cibuildwheel]
 test-requires = "pytest"
 test-command = "pytest {project}/tests"
-build = "cp37-* cp38-* cp39-* cp310-*"
+build = "cp38-* cp39-* cp310-*"
 # skip musl and ignore the non-standard linux builds
 skip = "*-musllinux_* *s390x* *ppc64le*"
 build-frontend = "build"
