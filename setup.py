@@ -49,16 +49,7 @@ if USE_CYTHON:
 else:
     extensions = no_cythonize(extensions)
 
-with open("requirements-dev.txt") as f:
-    dev_requires = f.read().strip().split("\n")
-
 setup(
     ext_modules=extensions,
-    # Copied from scipy https://github.com/scipy/scipy/blob/main/pyproject.toml
-    # NOTE: if you're changing this, update pyproject.toml numpy stuff too
-    install_requires=["numpy>=1.19.5"],
-    extras_require={
-        "dev": dev_requires,
-    },
     include_dirs=[np.get_include()],
 )

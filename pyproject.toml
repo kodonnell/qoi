@@ -25,9 +25,26 @@ write_to_template = "__version__ = \"{version}\""
 [tool.cibuildwheel]
 test-requires = "pytest"
 test-command = "pytest {project}/tests"
-build = "cp37-* cp38-* cp39-* cp310-*"
+build = "cp38-* cp39-* cp310-*"
 # skip musl and ignore the non-standard linux builds
 skip = "*-musllinux_* *s390x* *ppc64le*"
 build-frontend = "build"
 environment = "USE_CYTHON=1"
 build-verbosity = 3
+
+[project]
+name = "qoi"
+requires-python = ">=3.8"
+dependencies = [
+    # Copied from scipy https://github.com/scipy/scipy/blob/main/pyproject.toml
+    # NOTE: if you're changing this, update the above numpy stuff too
+    "numpy>=1.19.5"
+]
+
+[project.optional-dependencies]
+dev = [
+    "Cython",
+    "pytest",
+    "build",
+    "twine"
+]
