@@ -49,7 +49,17 @@ if USE_CYTHON:
 else:
     extensions = no_cythonize(extensions)
 
+with open("requirements.txt") as f:
+    install_requires = f.read().strip().split("\n")
+
+with open("requirements-dev.txt") as f:
+    dev_requires = f.read().strip().split("\n")
+
 setup(
     ext_modules=extensions,
+    install_requires=install_requires,
+    extras_require={
+        "dev": dev_requires,
+    },
     include_dirs=[np.get_include()],
 )
