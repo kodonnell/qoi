@@ -1,5 +1,6 @@
 [project]
 name = "qoi"
+dynamic = ["version"]
 requires-python = ">=3.8"
 dependencies = [
     # Copied from scipy https://github.com/scipy/scipy/blob/main/pyproject.toml
