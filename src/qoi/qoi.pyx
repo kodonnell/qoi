@@ -53,7 +53,9 @@ cpdef int write(filename, unsigned char[:,:,::1] rgb, colorspace: QOIColorSpace 
         # Makes a contiguous copy of the numpy array so we can process bytes directly:
         # rgb = np.ascontiguousarray(rgb)
     
-    cdef int bytes_written = qoi.qoi_write(_filename, &rgb[0][0][0], &desc)
+    cdef int bytes_written
+    with nogil:
+        bytes_written = qoi.qoi_write(_filename, &rgb[0][0][0], &desc)
     if bytes_written == 0:
         raise RuntimeError("Failed to write!")
     return bytes_written
@@ -72,8 +74,8 @@ cpdef np.ndarray[DTYPE_t, ndim=3] read(filename, int channels = 0, unsigned char
     filename_bytes = str(filename).encode('utf8')
     _filename = filename_bytes
     
-
-    pixels = <char *>qoi.qoi_read(_filename, &desc, channels)
+    with nogil:
+        pixels = <char *>qoi.qoi_read(_filename, &desc, channels)
     if pixels is NULL:
         raise RuntimeError("Failed to read!")
     try:
@@ -98,7 +100,8 @@ cpdef bytes encode(unsigned char[:,:,::1] rgb, colorspace: QOIColorSpace = QOICo
 
     # if not rgb.flags['C_CONTIGUOUS']:
     #     rgb = np.ascontiguousarray(rgb) # makes a contiguous copy of the numpy array so we can read memory directly
-    encoded = <char *>qoi.qoi_encode(&rgb[0][0][0], &desc, &size)
+    with nogil:
+        encoded = <char *>qoi.qoi_encode(&rgb[0][0][0], &desc, &size)
     if encoded is NULL or size <= 0:
         raise RuntimeError("Failed to encode!")
     try:
@@ -112,7 +115,8 @@ cpdef np.ndarray[DTYPE_t, ndim=3] decode(const unsigned char[::1] data, int chan
     cdef qoi.qoi_desc desc
     cdef int ret
     cdef char * pixels
-    pixels = <char *>qoi.qoi_decode(&data[0], <int>data.shape[0], &desc, channels)
+    with nogil:
+        pixels = <char *>qoi.qoi_decode(&data[0], <int>data.shape[0], &desc, channels)
     if pixels is NULL:
         raise RuntimeError("Failed to decode!")
     try:
