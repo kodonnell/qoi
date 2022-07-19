@@ -8,6 +8,7 @@ from pathlib import Path
 
 np.import_array()
 
+ctypedef np.uint8_t DTYPE_t
 
 class QOIColorSpace(enum.Enum):
     SRGB = qoi.QOI_SRGB
@@ -16,9 +17,9 @@ class QOIColorSpace(enum.Enum):
 cdef class PixelWrapper:
     cdef void* pixels
 
-    cdef np.ndarray as_ndarray(self, int height, int width, int channels, char * pixels):
+    cdef np.ndarray[DTYPE_t, ndim=3] as_ndarray(self, int height, int width, int channels, char * pixels):
         cdef np.npy_intp shape[3]
-        cdef np.ndarray ndarray
+        cdef np.ndarray[DTYPE_t, ndim=3] ndarray
         self.pixels = pixels
         shape[:] = (height, width, channels)
         ndarray = np.PyArray_SimpleNewFromData(3, shape, np.NPY_UINT8, self.pixels)
@@ -57,7 +58,7 @@ cpdef int write(filename, unsigned char[:,:,::1] rgb, colorspace: QOIColorSpace 
         raise RuntimeError("Failed to write!")
     return bytes_written
 
-cpdef np.ndarray read(filename, int channels = 0, unsigned char[::1] colorspace = bytearray(1)):
+cpdef np.ndarray[DTYPE_t, ndim=3] read(filename, int channels = 0, unsigned char[::1] colorspace = bytearray(1)):
     # TODO: how to return desc.colorspace? A: How about return a tuple of ndarray and a wrapper around struct qoi_desc? or we can add another param like char[:] to simulate pointer
     cdef bytes filename_bytes
     cdef char* _filename
@@ -106,7 +107,7 @@ cpdef bytes encode(unsigned char[:,:,::1] rgb, colorspace: QOIColorSpace = QOICo
     finally:
         PyMem_Free(encoded)
 
-cpdef np.ndarray decode(const unsigned char[::1] data, int channels = 0, unsigned char[::1] colorspace = bytearray(1)):
+cpdef np.ndarray[DTYPE_t, ndim=3] decode(const unsigned char[::1] data, int channels = 0, unsigned char[::1] colorspace = bytearray(1)):
     # TODO: what to do about desc.colorspace? A: How about return a tuple of ndarray and a wrapper around struct qoi_desc? or we can add another param like char[:] to simulate pointer
     cdef qoi.qoi_desc desc
     cdef int ret
