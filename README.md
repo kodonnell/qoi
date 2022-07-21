@@ -6,6 +6,7 @@ A simple Python wrapper around [qoi](https://github.com/phoboslab/qoi), the "Qui
 
 - Lossless with comparable compression to PNG, but fast! It encodes 10x faster and decodes around 5x faster than PNG in OpenCV or PIL.
 - You can make it lossy with a simple trick, and then you can get similar compression to JPEG but a whole lot faster. (These number vary a lot depending on how "lossy" you make JPEG or QOI). That's cool.
+- Multi-threaded - no GIL hold-ups here.
 
 ## Install
 
@@ -39,7 +40,26 @@ from qoi.benchmark import benchmark
 benchmark()  # Check out the arguments if you're interested
 ```
 
-## Benchmarks
+If you want to really max out your CPU:
+
+```python
+from concurrent.futures import ThreadPoolExecutor, wait
+import numpy as np
+import qoi
+
+RGB = np.random.randint(low=0, high=255, size=(224, 244, 3)).astype(np.uint8)
+
+def worker():
+    bites = bytearray(qoi.encode(RGB))
+    img_decoded = qoi.decode(bites)
+
+print("Go watch your CPU utilization ...")
+with ThreadPoolExecutor(8) as pool:
+    futures = [pool.submit(worker) for _ in range(10000)]
+    wait(futures)
+```
+
+## (Single-threaded) Benchmarks
 
 If we consider lossless, then we're generally comparing with PNG. Yup, there are others, but they're not as common. Benchmarks:
 
@@ -113,7 +133,6 @@ When you're on `main` on your local, `git tag vX.X.X` then `git push origin vX.X
 - Benchmarks - add real images, and also compare performance with QOI to see overhead of python wrapper.
 - `setuptools_scm_git_archive`?
 - Code completion?
-- Investigate a simple 'lossy' compression with QOI - halve the image size and compress, and on decode, just upscale. It'll likely be very visually similar, but also much smaller, but should compare with JPEG.
 
 ## Discussion
 
