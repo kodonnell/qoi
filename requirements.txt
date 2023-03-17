@@ -1,1 +1,2 @@
-numpy>=1.19.5
+# https://github.com/scipy/scipy/blob/1a72584820e53d83d5f6daab6c7fbafbe9af50d7/setup.py#L452
+numpy>=1.21.6
