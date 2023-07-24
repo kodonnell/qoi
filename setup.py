@@ -32,7 +32,7 @@ extensions = [
     Extension(
         "qoi.qoi",
         sources=["src/qoi/qoi.pyx", "src/qoi/implementation.c"],
-        define_macros=[("QOI_MALLOC", "PyMem_Malloc"), ("QOI_FREE", "PyMem_Free")],
+        define_macros=[("QOI_MALLOC", "PyMem_Malloc"), ("QOI_FREE", "PyMem_Free"), ("NPY_NO_DEPRECATED_API", "NPY_1_7_API_VERSION")],
     )
 ]
 
