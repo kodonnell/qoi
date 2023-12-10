@@ -1,7 +1,6 @@
 cimport qoi.qoi as qoi
 import numpy as np
 cimport numpy as np
-from cpython cimport PyObject, Py_INCREF
 from cpython.mem cimport PyMem_Free
 import enum
 from pathlib import Path
@@ -23,8 +22,7 @@ cdef class PixelWrapper:
         self.pixels = pixels
         shape[:] = (height, width, channels)
         ndarray = np.PyArray_SimpleNewFromData(3, shape, np.NPY_UINT8, self.pixels)
-        ndarray.base = <PyObject*> self
-        Py_INCREF(self)
+        np.set_array_base(ndarray, self)
         return ndarray
 
     def __dealloc__(self):
