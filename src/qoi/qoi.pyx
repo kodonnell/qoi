@@ -30,7 +30,7 @@ cdef class PixelWrapper:
 
 cpdef int write(filename, unsigned char[:,:,::1] rgb, colorspace: QOIColorSpace = QOIColorSpace.SRGB) except? -1:
     cdef bytes filename_bytes 
-    cdef char* _filename
+    cdef const char* _filename
     cdef qoi.qoi_desc desc
     cdef int ret
 
@@ -53,7 +53,7 @@ cpdef int write(filename, unsigned char[:,:,::1] rgb, colorspace: QOIColorSpace 
     
     cdef int bytes_written
     with nogil:
-        bytes_written = qoi.qoi_write(_filename, &rgb[0][0][0], &desc)
+        bytes_written = qoi.qoi_write(_filename, &rgb[0, 0, 0], &desc)
     if bytes_written == 0:
         raise RuntimeError("Failed to write!")
     return bytes_written
@@ -61,7 +61,7 @@ cpdef int write(filename, unsigned char[:,:,::1] rgb, colorspace: QOIColorSpace 
 cpdef np.ndarray[DTYPE_t, ndim=3] read(filename, int channels = 0, unsigned char[::1] colorspace = bytearray(1)):
     # TODO: how to return desc.colorspace? A: How about return a tuple of ndarray and a wrapper around struct qoi_desc? or we can add another param like char[:] to simulate pointer
     cdef bytes filename_bytes
-    cdef char* _filename
+    cdef const char* _filename
     cdef qoi.qoi_desc desc
     cdef int ret
     cdef char* pixels
@@ -99,7 +99,7 @@ cpdef bytes encode(unsigned char[:,:,::1] rgb, colorspace: QOIColorSpace = QOICo
     # if not rgb.flags['C_CONTIGUOUS']:
     #     rgb = np.ascontiguousarray(rgb) # makes a contiguous copy of the numpy array so we can read memory directly
     with nogil:
-        encoded = <char *>qoi.qoi_encode(&rgb[0][0][0], &desc, &size)
+        encoded = <char *>qoi.qoi_encode(&rgb[0, 0, 0], &desc, &size)
     if encoded is NULL or size <= 0:
         raise RuntimeError("Failed to encode!")
     try:
