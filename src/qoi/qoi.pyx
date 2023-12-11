@@ -1,7 +1,7 @@
 cimport qoi.qoi as qoi
 import numpy as np
 cimport numpy as np
-from cpython.mem cimport PyMem_Free
+from cpython.mem cimport PyMem_RawFree
 import enum
 from pathlib import Path
 
@@ -26,7 +26,7 @@ cdef class PixelWrapper:
         return ndarray
 
     def __dealloc__(self):
-        PyMem_Free(self.pixels)
+        PyMem_RawFree(self.pixels)
 
 cpdef int write(filename, unsigned char[:,:,::1] rgb, colorspace: QOIColorSpace = QOIColorSpace.SRGB) except? -1:
     cdef bytes filename_bytes 
@@ -81,7 +81,7 @@ cpdef np.ndarray[DTYPE_t, ndim=3] read(filename, int channels = 0, unsigned char
         return PixelWrapper().as_ndarray(desc.height, desc.width, desc.channels if channels == 0 else channels, pixels)
     except:
         if pixels is not NULL:
-            PyMem_Free(pixels)
+            PyMem_RawFree(pixels)
 
 cpdef bytes encode(unsigned char[:,:,::1] rgb, colorspace: QOIColorSpace = QOIColorSpace.SRGB):
     cdef qoi.qoi_desc desc
@@ -106,7 +106,7 @@ cpdef bytes encode(unsigned char[:,:,::1] rgb, colorspace: QOIColorSpace = QOICo
         # TODO: does this create a copy? A: Yes, this equivalent to PyBytes_FromStringAndSize
         return encoded[:size] # :size is important here - tells cython about size, and handles null bytes
     finally:
-        PyMem_Free(encoded)
+        PyMem_RawFree(encoded)
 
 cpdef np.ndarray[DTYPE_t, ndim=3] decode(const unsigned char[::1] data, int channels = 0, unsigned char[::1] colorspace = bytearray(1)):
     # TODO: what to do about desc.colorspace? A: How about return a tuple of ndarray and a wrapper around struct qoi_desc? or we can add another param like char[:] to simulate pointer
@@ -122,4 +122,4 @@ cpdef np.ndarray[DTYPE_t, ndim=3] decode(const unsigned char[::1] data, int chan
         return PixelWrapper().as_ndarray(desc.height, desc.width, desc.channels if channels == 0 else channels, pixels)
     except:
         if pixels is not NULL:
-            PyMem_Free(pixels)
+            PyMem_RawFree(pixels)
