@@ -378,6 +378,9 @@ void *qoi_encode(const void *data, const qoi_desc *desc, int *out_len) {
 
 	p = 0;
 	bytes = (unsigned char *) QOI_MALLOC(max_size);
+#ifdef MEMDEBUG
+    fprintf(stderr, "PyMem_RawMalloc %p\n", bytes);
+#endif
 	if (!bytes) {
 		return NULL;
 	}
@@ -527,6 +530,9 @@ void *qoi_decode(const void *data, int size, qoi_desc *desc, int channels) {
 
 	px_len = desc->width * desc->height * channels;
 	pixels = (unsigned char *) QOI_MALLOC(px_len);
+#ifdef MEMDEBUG
+    fprintf(stderr, "PyMem_RawMalloc %p\n", pixels);
+#endif
 	if (!pixels) {
 		return NULL;
 	}
@@ -634,6 +640,9 @@ void *qoi_read(const char *filename, qoi_desc *desc, int channels) {
 	}
 
 	data = QOI_MALLOC(size);
+#ifdef MEMDEBUG
+    fprintf(stderr, "PyMem_RawMalloc %p\n", data);
+#endif
 	if (!data) {
 		fclose(f);
 		return NULL;

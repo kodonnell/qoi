@@ -9,4 +9,14 @@ cdef extern from "phoboslab_qoi/qoi.h" nogil:
     void *qoi_encode(const void *data, const qoi_desc *desc, int *out_len)
     void *qoi_decode(const void *data, int size, qoi_desc *desc, int channels)
     int QOI_SRGB
-    int QOI_LINEAR 
+    int QOI_LINEAR
+
+cdef extern from "<stdio.h>" nogil:
+    """
+#ifdef MEMDEBUG
+    #define MEMLOG(...) fprintf(stderr, __VA_ARGS__)
+#else
+    #define MEMLOG(...)
+#endif
+    """
+    void MEMLOG(const char* fmt, ...)

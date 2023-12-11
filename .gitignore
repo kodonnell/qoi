@@ -1,8 +1,12 @@
+.idea
 build/
 dist/
 *.egg-info
 src/qoi/qoi.c
 *.so
+*.dll
+*.lib
+*.pyd
 __pycache__
 *.pyc
 # This gets overwritten continually by setuptools_scm - ignore it.

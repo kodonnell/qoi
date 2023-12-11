@@ -27,6 +27,8 @@ cdef class PixelWrapper:
 
     def __dealloc__(self):
         PyMem_RawFree(self.pixels)
+        qoi.MEMLOG("PyMem_RawFree %p\n", self.pixels)
+
 
 cpdef int write(filename, unsigned char[:,:,::1] rgb, colorspace: QOIColorSpace = QOIColorSpace.SRGB) except? -1:
     cdef bytes filename_bytes 
@@ -82,6 +84,7 @@ cpdef np.ndarray[DTYPE_t, ndim=3] read(filename, int channels = 0, unsigned char
     except:
         if pixels is not NULL:
             PyMem_RawFree(pixels)
+            qoi.MEMLOG("PyMem_RawFree %p\n", pixels)
 
 cpdef bytes encode(unsigned char[:,:,::1] rgb, colorspace: QOIColorSpace = QOIColorSpace.SRGB):
     cdef qoi.qoi_desc desc
@@ -107,6 +110,7 @@ cpdef bytes encode(unsigned char[:,:,::1] rgb, colorspace: QOIColorSpace = QOICo
         return encoded[:size] # :size is important here - tells cython about size, and handles null bytes
     finally:
         PyMem_RawFree(encoded)
+        qoi.MEMLOG("PyMem_RawFree %p\n", encoded)
 
 cpdef np.ndarray[DTYPE_t, ndim=3] decode(const unsigned char[::1] data, int channels = 0, unsigned char[::1] colorspace = bytearray(1)):
     # TODO: what to do about desc.colorspace? A: How about return a tuple of ndarray and a wrapper around struct qoi_desc? or we can add another param like char[:] to simulate pointer
@@ -123,3 +127,4 @@ cpdef np.ndarray[DTYPE_t, ndim=3] decode(const unsigned char[::1] data, int chan
     except:
         if pixels is not NULL:
             PyMem_RawFree(pixels)
+            qoi.MEMLOG("PyMem_RawFree %p\n", pixels)

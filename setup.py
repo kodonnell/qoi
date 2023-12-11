@@ -27,12 +27,14 @@ def no_cythonize(extensions, **_ignore):
         extension.sources[:] = sources
     return extensions
 
-
+define_macros=[("QOI_MALLOC", "PyMem_RawMalloc"), ("QOI_FREE", "PyMem_RawFree"), ("NPY_NO_DEPRECATED_API", "NPY_1_7_API_VERSION")]
+if os.getenv("DEBUG"):
+    define_macros.append(("MEMDEBUG", None))
 extensions = [
     Extension(
         "qoi.qoi",
         sources=["src/qoi/qoi.pyx", "src/qoi/implementation.c"],
-        define_macros=[("QOI_MALLOC", "PyMem_RawMalloc"), ("QOI_FREE", "PyMem_RawFree"), ("NPY_NO_DEPRECATED_API", "NPY_1_7_API_VERSION")],
+        define_macros=define_macros,
     )
 ]
 
