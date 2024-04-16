@@ -20,7 +20,7 @@ pip install qoi
 import numpy as np
 import qoi
 
-# Get your image as a numpy array (OpenCV, Pillow, etc. but here we just create a bunch of noise)
+# Get your image as a numpy array (OpenCV, Pillow, etc. but here we just create a bunch of noise). Note: HWC ordering
 rgb = np.random.randint(low=0, high=255, size=(224, 244, 3)).astype(np.uint8)
 
 # Write it:
@@ -84,12 +84,12 @@ So `qoi` isn't far off PNG in terms of compression, but 4x-20x faster to encode 
 
 If we consider lossy compression, again, JPEG is usually what we're comparing with. Normally, it'd be unfair to compare QOI with JPEG as QOI is lossless, however we can do a slight trick to make QOI lossy - downscale the image, then encode it, then upsample it by the same amount after decoding. You can see we've implemented that below with a downscaling to 40% and JPEG quality of 80 (which results in them having the same visual compression i.e. SSIM). So, results (only on `koi photo` as the rest are less meaningful/fair for lossy):
 
-| Test image                | Method              | Format   | Input (kb) | Encode (ms) | Encode (kb) | Decode (ms) | SSIM |
-| ------------------------- | ------------------- | -------- | ---------- | ----------- | ----------- | ----------- | ---- |
-| koi photo                 | PIL                 | jpg @ 80 | 6075.0     | 47.67       | 275.2       | 24.01       | 0.94 |
-| koi photo                 | opencv              | jpg @ 80 | 6075.0     | 24.03       | 275.3       | 19.58       | 0.94 |
-| koi photo                 | qoi                 | qoi      | 6075.0     | 23.17       | 3489.0      | 12.94       | 1.00 |
-| koi photo                 | qoi-lossy-0.40x0.40 | qoi      | 6075.0     | 4.38        | 667.5       | 2.96        | 0.94 |
+| Test image | Method              | Format   | Input (kb) | Encode (ms) | Encode (kb) | Decode (ms) | SSIM |
+| ---------- | ------------------- | -------- | ---------- | ----------- | ----------- | ----------- | ---- |
+| koi photo  | PIL                 | jpg @ 80 | 6075.0     | 47.67       | 275.2       | 24.01       | 0.94 |
+| koi photo  | opencv              | jpg @ 80 | 6075.0     | 24.03       | 275.3       | 19.58       | 0.94 |
+| koi photo  | qoi                 | qoi      | 6075.0     | 23.17       | 3489.0      | 12.94       | 1.00 |
+| koi photo  | qoi-lossy-0.40x0.40 | qoi      | 6075.0     | 4.38        | 667.5       | 2.96        | 0.94 |
 
 Here we see that lossless `qoi` is losing out considerably in compression, as expected for lossy vs lossless. Also, `qoi` is only 1x-2x faster of encoding, and 1.5x-2x faster for decoding. However, it's important to note that this varies a lot depending on the jpeg quality specified - here it's 80 but the default for OpenCV is actually 95 which is 3x worse compression and a bit slower.
 
