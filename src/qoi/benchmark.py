@@ -73,7 +73,7 @@ def bench_qoi(rgb, test_name, warmup=3, tests=10):
         "qoi",
         test=test_name,
         format="qoi",
-        raw_size=np.product(rgb.shape),
+        raw_size=np.prod(rgb.shape),
         encode_ms=encode_ms,
         encode_size=len(bites),
         decode_ms=decode_ms,
@@ -95,7 +95,7 @@ def bench_qoi_lossy(rgb, test_name, warmup=3, tests=10, scale=0.5):
         f"qoi-lossy-{scale:0.2f}x{scale:0.2f}",
         test=test_name,
         format="qoi",
-        raw_size=np.product(rgb.shape),
+        raw_size=np.prod(rgb.shape),
         encode_ms=encode_ms,
         encode_size=len(bites),
         decode_ms=decode_ms,
@@ -112,7 +112,6 @@ def bench_pil(rgb, test_name, warmup=3, tests=10, jpg=True, png=True, jpeg_quali
     if png:
         fmts.append("PNG")
     for fmt in fmts:
-
         if fmt == "JPEG":
             format = f"jpg @ {jpeg_quality}"
 
@@ -136,7 +135,7 @@ def bench_pil(rgb, test_name, warmup=3, tests=10, jpg=True, png=True, jpeg_quali
             "PIL",
             test=test_name,
             format=format,
-            raw_size=np.product(rgb.shape),
+            raw_size=np.prod(rgb.shape),
             encode_ms=encode_ms,
             encode_size=len(bites),
             decode_ms=decode_ms,
@@ -151,7 +150,6 @@ def bench_opencv(rgb, test_name, warmup=3, tests=10, jpg=True, png=True, jpeg_qu
     if png:
         exts.append(".png")
     for ext in exts:
-
         # Don't worry about RGB -> BGR as if we're using opencv we'd be using BGR anyway
         if ext == ".jpg":
             format = f"jpg @ {jpeg_quality}"
@@ -173,7 +171,7 @@ def bench_opencv(rgb, test_name, warmup=3, tests=10, jpg=True, png=True, jpeg_qu
             "opencv",
             test=test_name,
             format=format,
-            raw_size=np.product(rgb.shape),
+            raw_size=np.prod(rgb.shape),
             encode_ms=encode_ms,
             encode_size=len(bites),
             decode_ms=decode_ms,
@@ -206,7 +204,6 @@ def bench_methods(
 
 
 def totable(results: List[TestResult]):
-
     # Sort:
     results = sorted(results, key=lambda x: (x.test, x.method, x.format))
 

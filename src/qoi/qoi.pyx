@@ -28,8 +28,8 @@ cdef class PixelWrapper:
     def __dealloc__(self):
         PyMem_RawFree(self.pixels)
 
-cpdef int write(filename, unsigned char[:,:,::1] rgb, colorspace: QOIColorSpace = QOIColorSpace.SRGB) except? -1:
-    cdef bytes filename_bytes 
+cpdef int write(filename, const unsigned char[:,:,::1] rgb, colorspace: QOIColorSpace = QOIColorSpace.SRGB) except? -1:
+    cdef bytes filename_bytes
     cdef const char* _filename
     cdef qoi.qoi_desc desc
     cdef int ret
@@ -41,16 +41,16 @@ cpdef int write(filename, unsigned char[:,:,::1] rgb, colorspace: QOIColorSpace 
 
     filename_bytes = str(filename).encode('utf8')
     _filename = filename_bytes
-    
+
     desc.height = <unsigned int>rgb.shape[0]
     desc.width = <unsigned int>rgb.shape[1]
     desc.channels = <unsigned char>rgb.shape[2]
     desc.colorspace = colorspace.value
-    
+
     # if not rgb.flags['C_CONTIGUOUS']:
         # Makes a contiguous copy of the numpy array so we can process bytes directly:
         # rgb = np.ascontiguousarray(rgb)
-    
+
     cdef int bytes_written
     with nogil:
         bytes_written = qoi.qoi_write(_filename, &rgb[0, 0, 0], &desc)
@@ -71,7 +71,7 @@ cpdef np.ndarray[DTYPE_t, ndim=3] read(filename, int channels = 0, unsigned char
 
     filename_bytes = str(filename).encode('utf8')
     _filename = filename_bytes
-    
+
     with nogil:
         pixels = <char *>qoi.qoi_read(_filename, &desc, channels)
     if pixels is NULL:
@@ -83,7 +83,7 @@ cpdef np.ndarray[DTYPE_t, ndim=3] read(filename, int channels = 0, unsigned char
         if pixels is not NULL:
             PyMem_RawFree(pixels)
 
-cpdef bytes encode(unsigned char[:,:,::1] rgb, colorspace: QOIColorSpace = QOIColorSpace.SRGB):
+cpdef bytes encode(const unsigned char[:,:,::1] rgb, colorspace: QOIColorSpace = QOIColorSpace.SRGB):
     cdef qoi.qoi_desc desc
     cdef int ret, size
     cdef char * encoded
