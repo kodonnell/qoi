@@ -1,4 +1,6 @@
 Cython>=3.0.0
 pytest
+pillow
+opencv-python-headless
 build
 twine

@@ -30,7 +30,7 @@ write_to = "src/qoi/_version.py"
 write_to_template = "__version__ = \"{version}\""
 
 [tool.cibuildwheel]
-test-requires = "pytest"
+test-requires = "pytest pillow"
 test-command = "pytest {project}/tests"
 build = "cp38-* cp39-* cp310-* cp311-* cp312-*"
 # skip musl and ignore the non-standard linux builds
