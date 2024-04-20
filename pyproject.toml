@@ -36,4 +36,3 @@ build = "cp38-* cp39-* cp310-* cp311-* cp312-*"
 skip = "*-musllinux_* *s390x* *ppc64le* *i686*"
 build-frontend = "build"
 environment = {USE_CYTHON="1"}
-build-verbosity = 3
