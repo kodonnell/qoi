@@ -4,6 +4,7 @@ cimport numpy as np
 from cpython.mem cimport PyMem_RawFree
 import enum
 from pathlib import Path
+cimport cython
 
 np.import_array()
 
@@ -13,6 +14,7 @@ class QOIColorSpace(enum.Enum):
     SRGB = qoi.QOI_SRGB
     LINEAR = qoi.QOI_LINEAR
 
+@cython.internal
 cdef class PixelWrapper:
     cdef void* pixels
 

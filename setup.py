@@ -1,4 +1,5 @@
 import os
+import sys
 
 import numpy as np
 import setuptools_scm  # noqa: F401 - to avoid version = 0.0.0 errors if built without setuptools_scm installed
@@ -8,6 +9,8 @@ USE_CYTHON = os.getenv("USE_CYTHON") == "1"
 
 try:
     from Cython.Build import cythonize
+    from Cython.Compiler.Version import version as cython_version
+    from packaging.version import Version
 except ImportError:
     cythonize = None
     if USE_CYTHON:
@@ -27,12 +30,23 @@ def no_cythonize(extensions, **_ignore):
         extension.sources[:] = sources
     return extensions
 
+define_macros=[("QOI_MALLOC", "PyMem_RawMalloc"), ("QOI_FREE", "PyMem_RawFree"), ("NPY_NO_DEPRECATED_API", "NPY_1_7_API_VERSION")]
+if (
+    sys.version_info > (3, 13, 0)
+    and hasattr(sys, "_is_gil_enabled")
+    and not sys._is_gil_enabled()
+):
+    print("build nogil")
+    define_macros.append(
+        ("Py_GIL_DISABLED", "1"),
+    )  # ("CYTHON_METH_FASTCALL", "1"), ("CYTHON_VECTORCALL",  1)]
+
 
 extensions = [
     Extension(
         "qoi.qoi",
         sources=["src/qoi/qoi.pyx", "src/qoi/implementation.c"],
-        define_macros=[("QOI_MALLOC", "PyMem_RawMalloc"), ("QOI_FREE", "PyMem_RawFree"), ("NPY_NO_DEPRECATED_API", "NPY_1_7_API_VERSION")],
+        define_macros=define_macros,
     )
 ]
 
@@ -45,6 +59,8 @@ if USE_CYTHON:
         "wraparound": False,
         "cdivision": True,
     }
+    if Version(cython_version) >= Version("3.1.0a0"):
+        compiler_directives["freethreading_compatible"] = True
     extensions = cythonize(extensions, compiler_directives=compiler_directives)
 else:
     extensions = no_cythonize(extensions)
