@@ -31,6 +31,14 @@ try:
 except ImportError:
     warnings.warn("Couldn't find PIL - you can still run this, but PIL tests will be disabled.")
 
+QOIRS_AVAILABLE = False
+try:
+    import qoi_rs
+
+    QOIRS_AVAILABLE = True
+except ImportError:
+    warnings.warn("Couldn't find qoi_rs - you can still run this, but qoi_rs tests will be disabled.")
+
 try:
     from skimage.metrics import structural_similarity as img_similarity
 
@@ -78,6 +86,21 @@ def bench_qoi(rgb, test_name, warmup=3, tests=10):
         encode_size=len(bites),
         decode_ms=decode_ms,
         img_similarity=img_similarity(rgb, decoded, channel_axis=2),
+    )
+
+
+def bench_qoi_rs(rgb, test_name, warmup=3, tests=10):
+    encode_ms, bites = timeit(lambda: qoi_rs.encode(rgb.tobytes(), width=1920, height=1080), warmup=warmup, tests=tests)
+    decode_ms, decoded = timeit(lambda: qoi_rs.decode(bites), warmup=warmup, tests=tests)
+    yield TestResult(
+        "qoi_rs",
+        test=test_name,
+        format="qoi",
+        raw_size=np.prod(rgb.shape),
+        encode_ms=encode_ms,
+        encode_size=len(bites),
+        decode_ms=decode_ms,
+        img_similarity=img_similarity(rgb, np.frombuffer(decoded.data, dtype=np.uint8).reshape((decoded.height, decoded.width, decoded.channels)), channel_axis=2),
     )
 
 
@@ -196,6 +219,10 @@ def bench_methods(
     if (implementations is None or "pil" in implementations) and PIL_AVAILABLE:
         yield from bench_pil(
             rgb, test_name=name, warmup=warmup, tests=tests, jpg=jpg, png=png, jpeg_quality=jpeg_quality
+        )
+    if (implementations is None or "qoi_rs" in implementations) and QOIRS_AVAILABLE:
+        yield from bench_qoi_rs(
+            rgb, test_name=name, warmup=warmup, tests=tests
         )
     if qoi and (implementations is None or "qoi" in implementations):
         yield from bench_qoi(rgb, test_name=name, warmup=warmup, tests=tests)
