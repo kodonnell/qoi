@@ -90,7 +90,7 @@ def bench_qoi(rgb, test_name, warmup=3, tests=10):
 
 
 def bench_qoi_rs(rgb, test_name, warmup=3, tests=10):
-    encode_ms, bites = timeit(lambda: qoi_rs.encode(rgb.tobytes(), width=1920, height=1080), warmup=warmup, tests=tests)
+    encode_ms, bites = timeit(lambda: qoi_rs.encode(rgb.tobytes(), height=rgb.shape[0], width=rgb.shape[1]), warmup=warmup, tests=tests)
     decode_ms, decoded = timeit(lambda: qoi_rs.decode(bites), warmup=warmup, tests=tests)
     yield TestResult(
         "qoi_rs",
