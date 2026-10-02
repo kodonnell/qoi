@@ -5,7 +5,7 @@
 A simple Python wrapper around [QOI](https://qoiformat.org), the "Quite OK Image" image format (via the [`qoi`](https://crates.io/crates/qoi) Rust crate). It's
 
 - Lossless with comparable compression to PNG, but fast! It encodes 4x+ faster and decodes 3x+ faster than PNG in OpenCV or PIL.
-- You can make it lossy with a simple trick, and then you can get within a few x of JPEG's compression, but faster. (These number vary a lot depending on how "lossy" you make JPEG or QOI). That's cool.
+- You can make it lossy with a simple trick (downscale before encoding), and then it's around 2.5x faster than JPEG, though the files are around 2.4x bigger for the same visual quality. (These numbers vary a lot depending on how "lossy" you make JPEG or QOI.)
 - Multi-threaded - no GIL hold-ups here. Encoding and decoding release the GIL, and free-threaded Python (e.g. 3.14t) is supported too.
 - Zero-copy where possible - arrays are encoded from, and decoded into, numpy memory directly.
 
