@@ -1,30 +1,34 @@
 [build-system]
-requires = [
-    "setuptools >= 60",
-    "wheel >= 0.30.0",
-    "setuptools_scm >= 8.0",
-    "Cython>=3.0.8",
-    # Below copied from scipy https://github.com/scipy/scipy/blob/main/pyproject.toml
+requires = ["maturin>=1.7,<2"]
+build-backend = "maturin"
 
-    # numpy requirement for wheel builds for distribution on PyPI - building
-    # against 2.x yields wheels that are also compatible with numpy 1.x at
-    # runtime.
-    # Note that building against numpy 1.x works fine too - users and
-    # redistributors can do this by installing the numpy version they like and
-    # disabling build isolation.
-    "numpy>=2.0.0rc1",
+[project]
+name = "qoi"
+description = "A simple, fast wrapper around qoi (https://qoiformat.org), the 'Quite OK Image' format"
+readme = "README.md"
+license = { text = "MIT" }
+authors = [{ name = "kodonnell", email = "kodonnell@users.noreply.github.com" }]
+keywords = ["qoi"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Rust",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Topic :: Scientific/Engineering :: Image Processing",
 ]
-build-backend = "setuptools.build_meta"
+requires-python = ">=3.11"
+dependencies = ["numpy>=1.23.2"]
+# Version comes from Cargo.toml.
+dynamic = ["version"]
 
-[tool.setuptools_scm]
-write_to = "src/qoi/_version.py"
-write_to_template = "__version__ = \"{version}\""
+[project.optional-dependencies]
+dev = ["maturin>=1.7,<2", "pytest", "pillow", "opencv-python-headless"]
 
-[tool.cibuildwheel]
-test-requires = "pytest pillow"
-test-command = "pytest {project}/tests"
-build = "cp39-* cp310-* cp311-* cp312-* cp313-*"
-# skip musl and ignore the non-standard linux builds
-skip = "*-musllinux_* *s390x* *ppc64le* *i686*"
-build-frontend = "build"
-environment = {USE_CYTHON="1"}
+[project.urls]
+Homepage = "https://github.com/kodonnell/qoi"
+"Bug Tracker" = "https://github.com/kodonnell/qoi/issues"
+
+[tool.maturin]
+python-source = "src"
+module-name = "qoi._qoi"
+features = ["pyo3/extension-module"]

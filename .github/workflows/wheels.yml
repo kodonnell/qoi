@@ -10,88 +10,155 @@ on:
     branches:
       - main
 
+permissions:
+  contents: read
+
 jobs:
   build_sdist:
     name: Build source distribution
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
+
+      - name: Check the tag matches the version in Cargo.toml
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          version=$(grep -m1 '^version' Cargo.toml | cut -d '"' -f 2)
+          if [ "v$version" != "$GITHUB_REF_NAME" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME doesn't match the version in Cargo.toml ($version)"
+            exit 1
+          fi
+
+      - name: Build sdist
+        uses: PyO3/maturin-action@v1
         with:
-          fetch-depth: 0 # Optional, use if you use setuptools_scm https://stackoverflow.com/a/68959339
-          submodules: true # Optional, use if you have submodules
+          command: sdist
+          args: --out dist
 
-      - name: Set up Python 3.9
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
-          python-version: 3.9
+          python-version: "3.11"
 
-      - name: Install pypa/build
-        run: pip install build
+      - name: Check we can build from the sdist (Rust is preinstalled on GitHub runners) and the tests pass
+        run: |
+          pip install dist/*.tar.gz pytest pillow
+          pytest tests
 
-      - name: Build sdist *and* wheel (even though we ignore it) to check we can confirm wheels from source.
-        run: USE_CYTHON=1 python -m build
-
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
+          name: wheels-sdist
           path: dist/*.tar.gz
 
   build_wheels:
-    needs: build_sdist
-    name: Build wheels on ${{ matrix.os }}
+    name: Build wheels on ${{ matrix.os }} (${{ matrix.target }})
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-13, macos-14]
+        include:
+          - { os: ubuntu-latest, target: x86_64 }
+          - { os: windows-latest, target: x64 }
+          - { os: macos-15-intel, target: x86_64 }
+          - { os: macos-latest, target: aarch64 }
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
         with:
-          fetch-depth: 0 # Optional, use if you use setuptools_scm https://stackoverflow.com/a/68959339
-          submodules: true # Optional, use if you have submodules      -
+          python-version: "3.11"
 
-      - uses: actions/setup-python@v5
-
-      - name: Install cibuildwheel
-        run: python -m pip install cibuildwheel==2.22.0
-
+      # One abi3 wheel covering CPython >= 3.11.
       - name: Build wheels
-        run: python -m cibuildwheel --output-dir wheelhouse
-
-      - uses: actions/upload-artifact@v4
+        uses: PyO3/maturin-action@v1
         with:
-          name: cibw-wheels-${{ matrix.os }}-${{ strategy.job-index }}
-          path: ./wheelhouse/*.whl
+          target: ${{ matrix.target }}
+          args: --release --out dist
+          sccache: ${{ !startsWith(github.ref, 'refs/tags/') }}
+          manylinux: auto
+
+      # Free-threaded Python can't use abi3, so needs its own wheel.
+      - uses: actions/setup-python@v6
+        if: runner.os != 'Linux' # the manylinux container has its own interpreters
+        with:
+          python-version: "3.14t"
+
+      - name: Build free-threaded wheels
+        uses: PyO3/maturin-action@v1
+        with:
+          target: ${{ matrix.target }}
+          args: --release --out dist -i python3.14t
+          sccache: ${{ !startsWith(github.ref, 'refs/tags/') }}
+          manylinux: auto
+
+      - uses: actions/upload-artifact@v6
+        with:
+          name: wheels-${{ matrix.os }}-${{ matrix.target }}
+          path: dist/*.whl
+
+  test_wheels:
+    needs: build_wheels
+    name: Test wheels on ${{ matrix.os }} with Python ${{ matrix.python }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-15-intel, macos-latest]
+        python: ["3.11", "3.14", "3.14t"]
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python }}
+
+      - uses: actions/download-artifact@v7
+        with:
+          pattern: wheels-*
+          path: dist
+          merge-multiple: true
+
+      - name: Install the built wheel and test it
+        shell: bash
+        run: |
+          # --no-index so we fail rather than silently installing qoi from PyPI if there's no matching wheel.
+          pip install --no-index --find-links dist --no-deps qoi
+          pip install numpy pytest pillow
+          pytest tests
 
   create_release:
-    needs: build_wheels
+    needs: [build_sdist, test_wheels]
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/v')
+    permissions:
+      contents: write
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v7
         with:
+          pattern: wheels-*
           path: dist
           merge-multiple: true
 
       - name: Release
-        uses: softprops/action-gh-release@v2.0.4
+        uses: softprops/action-gh-release@v2
         with:
           files: dist/*
 
   upload_pypi:
-    needs: build_wheels
+    needs: [build_sdist, test_wheels]
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/v')
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v7
         with:
+          pattern: wheels-*
           path: dist
           merge-multiple: true
 
-      - uses: pypa/gh-action-pypi-publish@v1.8.14
+      - uses: pypa/gh-action-pypi-publish@release/v1
         with:
           user: __token__
           password: ${{ secrets.test_pypi_password }}
-          repository_url: https://test.pypi.org/legacy/
-      - uses: pypa/gh-action-pypi-publish@v1.8.14
+          repository-url: https://test.pypi.org/legacy/
+      - uses: pypa/gh-action-pypi-publish@release/v1
         with:
           user: __token__
           password: ${{ secrets.pypi_password }}

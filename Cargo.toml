@@ -1,0 +1,22 @@
+[package]
+# The Python package is named `qoi` (see pyproject.toml); the crate needs a different name so it doesn't clash with its
+# `qoi` dependency.
+name = "qoi-python"
+version = "0.8.0"
+edition = "2021"
+license = "MIT"
+publish = false
+
+[lib]
+name = "_qoi"
+crate-type = ["cdylib"]
+
+[dependencies]
+# abi3-py311: one wheel covers CPython >= 3.11. (Free-threaded interpreters get version-specific builds.)
+pyo3 = { version = "0.29", features = ["abi3-py311"] }
+numpy = "0.29"
+qoi = "0.4.1"
+
+[profile.release]
+lto = "fat"
+codegen-units = 1

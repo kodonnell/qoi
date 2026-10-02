@@ -1,0 +1,13 @@
+from os import PathLike
+
+import numpy as np
+import numpy.typing as npt
+
+from qoi import QOIColorSpace
+
+__version__: str
+
+def encode(rgb: npt.NDArray[np.uint8], colorspace: QOIColorSpace = ...) -> bytes: ...
+def decode(data: bytes | bytearray | memoryview, channels: int = 0, colorspace: bytearray | None = None) -> npt.NDArray[np.uint8]: ...
+def write(filename: str | PathLike[str], rgb: npt.NDArray[np.uint8], colorspace: QOIColorSpace = ...) -> int: ...
+def read(filename: str | PathLike[str], channels: int = 0, colorspace: bytearray | None = None) -> npt.NDArray[np.uint8]: ...
