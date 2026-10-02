@@ -87,7 +87,10 @@ def test_empty_image():
         qoi.encode(np.zeros((0, 10, 3), np.uint8))
 
 
-@pytest.mark.parametrize("data", [b"", b"not a qoi image", qoi.encode(RGB)[:-100]])
+# Explicit ids, as otherwise pytest puts the whole bytes in the test id, which is too long for Windows.
+@pytest.mark.parametrize(
+    "data", [b"", b"not a qoi image", qoi.encode(RGB)[:-100]], ids=["empty", "not-qoi", "truncated"]
+)
 def test_invalid_data(data):
     with pytest.raises(RuntimeError, match="Failed to decode"):
         qoi.decode(data)
